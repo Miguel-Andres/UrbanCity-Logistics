@@ -1,6 +1,31 @@
 @import "tailwindcss";
 
 :root {
+  /* Gradientes Principales */
+  --gradient-primary: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  --gradient-secondary: linear-gradient(135deg, #1A365D 0%, #2C5282 100%);
+  --gradient-accent: linear-gradient(135deg, #00C896 0%, #00A678 100%);
+
+  /* Colores Base */
+  --primary: #FF6B35;
+  --primary-light: #FF8F65;
+  --primary-dark: #E55A2B;
+
+  --secondary: #1A365D;
+  --secondary-light: #2C5282;
+  --secondary-dark: #1A2F4F;
+
+  --accent: #00C896;
+  --accent-light: #26D4A8;
+  --accent-dark: #00A678;
+
+  /* Neutrales Modernos */
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-900: #111827;
+  --white: #FFFFFF;
+
+  /* Background y foreground */
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -22,5 +47,26 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Efectos de Glassmorphism */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+}
+
+/* Gradientes animados */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(270deg, #FF6B35, #F7931E, #FF8F65);
+  background-size: 600% 600%;
+  animation: gradient-shift 8s ease infinite;
 }
