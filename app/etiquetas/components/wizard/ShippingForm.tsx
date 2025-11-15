@@ -178,10 +178,10 @@ export default function ShippingForm({
             </div>
           </div>
 
-          {/* Tipo de Entrega - Campo Obligatorio */}
+          {/* Pago - Campo Obligatorio */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Tipo de Entrega <span className="text-red-500 ml-1">*</span>
+              Pago <span className="text-red-500 ml-1">*</span>
             </label>
             <div className="flex gap-3">
               <button

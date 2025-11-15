@@ -100,37 +100,48 @@ const CSS_STYLES = `
     line-height: 1.3;
   }
   
-  /* Grid para tipos de envío */
-  .type-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin: 4px 0;
+  /* Información de envío y entrega - más limpia */
+  .shipping-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 6px 0;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
   }
   
-  .type-item {
-    border: 1px solid #000;
-    padding: 4px;
-    text-align: center;
+  .shipping-type,
+  .delivery-type {
+    flex: 1;
   }
   
-  .type-label {
-    font-weight: 700;
+  .info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+  
+  .info-tag {
+    font-weight: 600;
     font-size: 7px;
     text-transform: uppercase;
-    margin-bottom: 1px;
+    color: #666;
+    white-space: nowrap;
   }
   
-  .type-value {
-    font-weight: 800;
+  .info-value {
+    font-weight: 700;
     font-size: 8px;
+    color: #000;
   }
   
   .amount {
     font-weight: 800;
     font-size: 9px;
     color: #d00;
-    margin-top: 1px;
+    margin-top: 2px;
   }
   
   /* QR Section */
@@ -196,11 +207,11 @@ const CSS_STYLES = `
     font-size: 7px;
   }
   
-  .size-10x10 .type-label {
+  .size-10x10 .info-tag {
     font-size: 6px;
   }
   
-  .size-10x10 .type-value {
+  .size-10x10 .info-value {
     font-size: 7px;
   }
   
@@ -245,20 +256,17 @@ const CSS_STYLES = `
     font-size: 12px;
   }
   
-  .size-a4 .type-grid {
+  .size-a4 .shipping-info {
     gap: 12px;
     margin: 8px 0;
+    padding: 8px 0;
   }
   
-  .size-a4 .type-item {
-    padding: 8px;
-  }
-  
-  .size-a4 .type-label {
+  .size-a4 .info-tag {
     font-size: 10px;
   }
   
-  .size-a4 .type-value {
+  .size-a4 .info-value {
     font-size: 12px;
   }
   
@@ -375,14 +383,18 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
             </div>
             
             <!-- Tipo de Envío y Entrega -->
-            <div class="type-grid">
-              <div class="type-item">
-                <div class="type-label">Tipo Envío</div>
-                <div class="type-value">${datos.tipoEnvio || 'NO ESPECIFICADO'}</div>
+            <div class="shipping-info">
+              <div class="shipping-type">
+                <div class="info-row">
+                  <span class="info-tag">Tipo Envío:</span>
+                  <span class="info-value">${datos.tipoEnvio || 'NO ESPECIFICADO'}</span>
+                </div>
               </div>
-              <div class="type-item">
-                <div class="type-label">Entrega</div>
-                <div class="type-value">${datos.tipoEntrega || 'NO ESPECIFICADO'}</div>
+              <div class="delivery-type">
+                <div class="info-row">
+                  <span class="info-tag">Pago:</span>
+                  <span class="info-value">${datos.tipoEntrega || 'NO ESPECIFICADO'}</span>
+                </div>
                 ${datos.tipoEntrega === 'COBRAR' && datos.montoACobrar ? 
                   `<div class="amount">$${Number(datos.montoACobrar).toLocaleString('es-CL')}</div>` : ''
                 }
