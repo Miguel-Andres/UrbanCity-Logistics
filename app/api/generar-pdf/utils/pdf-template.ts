@@ -144,6 +144,36 @@ const CSS_STYLES = `
     margin-top: 2px;
   }
   
+  /* Observaciones - Espacio fijo para hasta 150 caracteres */
+  .observaciones {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    padding: 4px;
+    min-height: 32px; /* Espacio fijo para hasta ~4 líneas de texto */
+    max-height: 48px; /* Máximo para evitar desbordamiento */
+    overflow: hidden;
+    margin: 4px 0;
+  }
+  
+  .observaciones-texto {
+    font-size: 7px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .observaciones-vacio {
+    color: #999;
+    font-style: italic;
+  }
+
   /* QR Section */
   .qr-section {
     margin-top: auto;
@@ -175,30 +205,31 @@ const CSS_STYLES = `
   }
   
   /* Estilos para tamaños específicos */
-  /* 10x10 - Más compacto */
+  /* 10x10 - Ultra compacto sin destinatario */
   .size-10x10 {
-    font-size: 8px;
+    font-size: 7px;
   }
   
   .size-10x10 .header {
-    padding: 4px 6px;
+    padding: 3px 4px;
   }
   
   .size-10x10 .company-name {
-    font-size: 10px;
+    font-size: 9px;
+    margin-bottom: 1px;
   }
   
   .size-10x10 .tracking-code {
-    font-size: 8px;
+    font-size: 7px;
   }
   
   .size-10x10 .basic-info {
-    padding: 3px 6px;
+    padding: 2px 4px;
   }
   
   .size-10x10 .content {
-    padding: 6px;
-    gap: 4px;
+    padding: 4px;
+    gap: 2px;
   }
   
   .size-10x10 .section-title,
@@ -208,21 +239,45 @@ const CSS_STYLES = `
   }
   
   .size-10x10 .info-tag {
-    font-size: 6px;
+    font-size: 5px;
   }
   
   .size-10x10 .info-value {
     font-size: 7px;
   }
   
+  .size-10x10 .shipping-info {
+    flex-direction: column;
+    gap: 2px;
+    margin: 3px 0;
+    padding: 3px 0;
+  }
+  
+  .size-10x10 .observaciones {
+    min-height: 20px;
+    max-height: 30px;
+    padding: 2px;
+    margin: 2px 0;
+  }
+  
+  .size-10x10 .observaciones-texto {
+    font-size: 6px;
+    -webkit-line-clamp: 3;
+  }
+  
   .size-10x10 .qr-section {
-    padding: 4px 0;
+    padding: 3px 0;
   }
   
   .size-10x10 .footer {
-    padding: 3px 6px;
+    padding: 2px 4px;
   }
   
+  .size-10x10 .footer-text {
+    font-size: 5px;
+  }
+  
+    
   /* A4 - Más espaciado */
   .size-a4 {
     font-size: 11px;
@@ -284,6 +339,17 @@ const CSS_STYLES = `
   
   .size-a4 .footer-text {
     font-size: 10px;
+  }
+  
+  .size-a4 .observaciones {
+    min-height: 48px;
+    max-height: 72px;
+    padding: 8px;
+  }
+  
+  .size-a4 .observaciones-texto {
+    font-size: 10px;
+    -webkit-line-clamp: 5;
   }
 
   /* Estilos para impresión */
@@ -371,8 +437,7 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
           <!-- Contenido Principal -->
           <main class="content">
             <!-- Datos del Destinatario -->
-            <div class="section">
-              <div class="section-title">Destinatario</div>
+            <div class="section destinatario-section">
               <div class="section-content">
                 <div><strong>${datos.nombreDestinatario || 'No especificado'}</strong></div>
                 <div>📱 ${datos.telefonoDestinatario || 'No especificado'}</div>
@@ -386,28 +451,33 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
             <div class="shipping-info">
               <div class="shipping-type">
                 <div class="info-row">
-                  <span class="info-tag">Tipo Envío:</span>
-                  <span class="info-value">${datos.tipoEnvio || 'NO ESPECIFICADO'}</span>
+                  <span class="info-tag">Envío:</span>
+                  <span class="info-value">${datos.tipoEnvio || 'NO ESP.'}</span>
                 </div>
               </div>
               <div class="delivery-type">
                 <div class="info-row">
                   <span class="info-tag">Pago:</span>
-                  <span class="info-value">${datos.tipoEntrega || 'NO ESPECIFICADO'}</span>
+                  <span class="info-value">${datos.tipoEntrega}</span>
                 </div>
                 ${datos.tipoEntrega === 'COBRAR' && datos.montoACobrar ? 
-                  `<div class="amount">$${Number(datos.montoACobrar).toLocaleString('es-CL')}</div>` : ''
+                  `<div class="amount">$${new Intl.NumberFormat('es-AR').format(Number(datos.montoACobrar))}</div>` : ''
                 }
               </div>
             </div>
             
-            <!-- Observaciones -->
-            ${datos.observaciones ? `
-              <div class="section">
-                <div class="section-title">Observaciones</div>
-                <div class="section-content">${datos.observaciones}</div>
+            <!-- Observaciones - Espacio fijo para hasta 150 caracteres -->
+            <div class="section">
+              <div class="section-title">Observaciones</div>
+              <div class="observaciones">
+                <div class="observaciones-texto">
+                  ${datos.observaciones && datos.observaciones.trim() ? 
+                    datos.observaciones.length > 150 ? datos.observaciones.substring(0, 150) + '...' : datos.observaciones :
+                    '<span class="observaciones-vacio">Sin observaciones</span>'
+                  }
+                </div>
               </div>
-            ` : ''}
+            </div>
             
             <!-- QR Code -->
             <div class="qr-section">
@@ -423,13 +493,7 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
             </div>
           </main>
           
-          <!-- Footer -->
-          <footer class="footer">
-            <div class="footer-text">
-              urbancitylogistics.com | contacto@urbancitylogistics.com
-            </div>
-          </footer>
-        </div>
+          </div>
       </body>
     </html>
   `

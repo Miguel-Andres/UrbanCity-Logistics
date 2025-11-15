@@ -114,7 +114,7 @@ export default function ShippingForm({
         <div className="mt-4">
           <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
             <MapPin className="w-4 h-4 mr-2 text-orange-500" />
-            Dirección
+            Dirección (calle, altura, piso, depto)
           </label>
           <input
             type="text"
