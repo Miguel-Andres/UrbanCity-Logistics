@@ -1,11 +1,11 @@
 /**
- * Vista previa de la etiqueta
+ * Panel de acción rápida para generar PDFs
  */
 'use client'
 
-import { FileText, QrCode, Package } from 'lucide-react'
+import { useState } from 'react'
+import { FileText, Download, Printer, Settings, Barcode } from 'lucide-react'
 import { FormData } from '@/app/etiquetas/types'
-import CodigoEnvio from '@/app/etiquetas/components/ui/codigo-envio'
 
 interface LabelPreviewProps {
   formData: FormData
@@ -22,146 +22,222 @@ export default function LabelPreview({
   nextStepLabel = "Siguiente",
   nextStepDisabled = false 
 }: LabelPreviewProps) {
+  const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [validationError, setValidationError] = useState<string>('')
+
+  // Función de validación
+  const validateFormData = (): boolean => {
+    const errors: string[] = []
+
+    // Validaciones obligatorias
+    if (!formData.nombreDestinatario || formData.nombreDestinatario.trim() === '') {
+      errors.push('Nombre del destinatario')
+    }
+    
+    if (!formData.telefonoDestinatario || formData.telefonoDestinatario.trim() === '') {
+      errors.push('Teléfono del destinatario');
+    }
+    
+    if (!formData.direccion || formData.direccion.trim() === '') {
+      errors.push('Dirección');
+    }
+    
+    if (!formData.localidadDestinatario || formData.localidadDestinatario.trim() === '') {
+      errors.push('Localidad');
+    }
+    
+    if (!formData.tipoEnvio) {
+      errors.push('Tipo de envío');
+    }
+
+    // Validar monto si es COBRAR
+    if (formData.tipoEntrega === 'COBRAR' && (!formData.montoACobrar || formData.montoACobrar <= 0)) {
+      errors.push('Monto a cobrar (requerido para COBRAR)');
+    }
+
+    if (errors.length > 0) {
+      setValidationError(`Faltan campos obligatorios: ${errors.join(', ')}`)
+      return false
+    }
+
+    setValidationError('')
+    return true
+  }
+
+  const handleGeneratePDF = async () => {
+    // Validar antes de generar
+    if (!validateFormData()) {
+      return
+    }
+
+    setIsGenerating(true)
+    try {
+      // Actualizar formData con el tamaño seleccionado
+      const updatedFormData = { ...formData, tipoEtiqueta: selectedSize }
+      
+      const response = await fetch('/api/generar-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedFormData),
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.href = url
+        a.download = `etiqueta-${selectedSize}-${Date.now()}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        console.error('Error generando PDF')
+        alert('Error al generar el PDF. Por favor, intente nuevamente.')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al generar el PDF. Por favor, intente nuevamente.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleGenerateZPL = async () => {
+    // Validar antes de generar
+    if (!validateFormData()) {
+      return
+    }
+
+    setIsGenerating(true)
+    try {
+      // Actualizar formData con el tamaño seleccionado
+      const updatedFormData = { ...formData, tipoEtiqueta: selectedSize }
+      
+      const response = await fetch('/api/generar-zpl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedFormData),
+      })
+
+      if (response.ok) {
+        const zplData = await response.text()
+        const blob = new Blob([zplData], { type: 'text/plain' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.href = url
+        a.download = `etiqueta-${selectedSize}-${Date.now()}.zpl`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        console.error('Error generando ZPL')
+        alert('Error al generar el ZPL. Por favor, intente nuevamente.')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al generar el ZPL. Por favor, intente nuevamente.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  
   return (
     <div className="lg:sticky lg:top-24 h-fit">
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-7">
         <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-orange-500/20">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          Vista Previa de la Etiqueta
+          Acción Rápida
         </h3>
 
-        {/* Preview de la etiqueta */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 mb-6">
-          <div 
-            className="aspect-square max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-6 relative overflow-hidden border border-gray-200"
-            style={{
-              width: '100%',
-              maxWidth: formData.tipoEtiqueta === '10x15' ? '420px' : '380px'
-            }}
-          >
-            {/* Patrón de fondo */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="h-full w-full" style={{
-                backgroundImage: `repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 1px, transparent 10px)`,
-                backgroundSize: '20px 20px'
-              }}></div>
-            </div>
-
-            {/* Header */}
-            <div className="absolute top-3 left-3 right-3 flex justify-between items-center z-10">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg mr-2.5 flex items-center justify-center shadow-md">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <span className="text-sm font-bold text-gray-900">URBAN CITY</span>
-                  <div className="text-xs text-gray-500 font-medium">Logistics</div>
-                </div>
-              </div>
-              <div className="text-right">
-                {formData.chat && <div className="text-xs text-orange-600 font-semibold">CHAT: {formData.chat}</div>}
-              </div>
-            </div>
-
-            {/* Código de envío */}
-            <div className="text-center mt-10 mb-4 z-10 relative">
-              <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg py-3">
-                <div className="text-3xl font-mono font-bold text-orange-600 tracking-wider">
-                  <CodigoEnvio />
-                </div>
-              </div>
-              {formData.nroEnvio && (
-                <div className="text-xs text-gray-600 mt-2 font-medium">N° ENVÍO: {formData.nroEnvio}</div>
-              )}
-            </div>
-
-            {/* Cuadrícula de información */}
-            <div className="grid grid-cols-2 gap-3 bg-gray-50 rounded-lg p-3 text-xs z-10 relative">
-              <div className="bg-white rounded-lg p-2 text-center">
-                <span className="text-gray-500 font-medium">LOCALIDAD</span>
-                <div className="font-bold text-gray-900 uppercase text-sm mt-0.5">{formData.localidad || '---'}</div>
-              </div>
-              <div className="bg-white rounded-lg p-2 text-center">
-                <span className="text-gray-500 font-medium">TIPO</span>
-                <div className="font-bold text-gray-900 uppercase text-sm mt-0.5">
-                  {formData.variante ? formData.variante.replace('_', ' ').toUpperCase() : '---'}
-                </div>
-              </div>
-            </div>
-
-            {/* Separador */}
-            <div className="my-4 border-t-2 border-dashed border-gray-300 z-10 relative"></div>
-
-            {/* Destinatario */}
-            <div className="text-xs mb-3 z-10 relative">
-              <div className="text-gray-500 font-semibold mb-2">DESTINATARIO:</div>
-              <div className="font-bold text-gray-900 uppercase text-base mb-2">
-                {formData.nombreDestinatario || 'Nombre del destinatario'}
-              </div>
-              <div className="space-y-1">
-                <div className="text-gray-700 font-medium">
-                  📍 DIRECCIÓN: {formData.direccionDestinatario || 'Dirección del destinatario'}
-                </div>
-                <div className="text-gray-600 font-medium">
-                  📞 TELÉFONO: {formData.telefonoDestinatario || 'Teléfono'}
-                </div>
-                {formData.observaciones && (
-                  <div className="text-gray-600">
-                    🔄 ENTRE: {formData.observaciones}
-                  </div>
-                )}
-                {formData.cpDestinatario && (
-                  <div className="text-gray-600">
-                    📌 REF: {formData.cpDestinatario}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Código QR */}
-            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-lg">
-                <QrCode className="w-14 h-14 text-gray-400" />
-              </div>
-            </div>
-
-            {/* Pie URBAN CITY */}
-            <div className="absolute bottom-3 left-0 right-0 text-center z-10">
-              <div className="text-xs font-bold text-gray-900">URBAN CITY LOGISTICS</div>
-              <div className="text-xs text-gray-500">www.urbancitylogistics.cl</div>
-            </div>
+        {/* Selector de tamaño de etiqueta */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <Settings className="w-4 h-4 mr-2 inline" />
+            Tamaño de Etiqueta
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { value: '10x10', label: '10×10 cm', desc: 'Compacto' },
+              { value: '10x15', label: '10×15 cm', desc: 'Estándar' },
+              { value: 'A4', label: 'A4', desc: 'Completo' }
+            ].map((size) => (
+              <button
+                key={size.value}
+                onClick={() => setSelectedSize(size.value)}
+                className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
+                  selectedSize === size.value
+                    ? 'border-orange-500 bg-orange-50 text-orange-700 font-semibold'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="text-sm font-medium">{size.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{size.desc}</div>
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* Botones de acción */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <button
+            onClick={handleGeneratePDF}
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm"
+          >
+            <Download className="w-4 h-4" />
+            <span>{isGenerating ? 'Generando...' : 'Generar PDF'}</span>
+          </button>
+
+          <button
+            onClick={handleGenerateZPL}
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm"
+          >
+            <Barcode className="w-4 h-4" />
+            <span>Generar ZPL</span>
+          </button>
+        </div>
+
+        {/* Mensaje de error de validación */}
+        {validationError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-800 font-medium">{validationError}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Navigation buttons */}
-        {(onPrevStep || onNextStep) && (
-          <div className="flex space-x-4">
-            {onPrevStep && (
-              <button
-                onClick={onPrevStep}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 group"
-              >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
-                <span>Anterior</span>
-              </button>
-            )}
-            {onNextStep && (
-              <button
-                onClick={onNextStep}
-                disabled={nextStepDisabled}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-              >
-                <span>{nextStepLabel}</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-              </button>
-            )}
+        {onPrevStep && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <button
+              onClick={onPrevStep}
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-3 group"
+            >
+              <span>Anterior</span>
+            </button>
           </div>
         )}
       </div>
     </div>
   )
 }
-
-import { ArrowLeft, ArrowRight } from 'lucide-react'

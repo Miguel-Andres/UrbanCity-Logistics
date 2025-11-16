@@ -42,14 +42,14 @@ export default function ShippingForm({
   }
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-          <div className="w-1 h-6 bg-orange-500 rounded-full mr-3"></div>
+    <div className="space-y-3 max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+        <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="w-1 h-5 bg-orange-500 rounded-full mr-2"></div>
           Información del Destinatario
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Nombre y Apellido - Ancho completo en mobile, media en desktop */}
           <div className="md:col-span-1">
             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
@@ -140,19 +140,19 @@ export default function ShippingForm({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-          <div className="w-1 h-6 bg-orange-500 rounded-full mr-3"></div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+        <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="w-1 h-5 bg-orange-500 rounded-full mr-2"></div>
           Detalles del Envío
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Tipo de Envío */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Tipo de Envío
             </label>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => onFieldChange('tipoEnvio', 'VENTA')}
@@ -183,7 +183,7 @@ export default function ShippingForm({
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Pago <span className="text-red-500 ml-1">*</span>
             </label>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => handleTipoEntregaChange('COBRAR')}
@@ -253,9 +253,9 @@ export default function ShippingForm({
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-          <div className="w-1 h-6 bg-orange-500 rounded-full mr-3"></div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+        <h3 className="text-base font-semibold text-gray-800 mb-4 flex items-center">
+          <div className="w-1 h-5 bg-orange-500 rounded-full mr-2"></div>
           Información Adicional
         </h3>
         
