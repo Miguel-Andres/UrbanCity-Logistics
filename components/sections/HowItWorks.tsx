@@ -22,7 +22,7 @@ export default function HowItWorks() {
       number: "2", 
       title: "Preparamos tu Paquete",
       description: "Recolectamos tu paquete y lo preparamos con el mejor embalaje para su protección.",
-      features: ["Recojo door-to-door", "Embalaje profesional", "Fotos del estado"]
+      features: ["Puerta a Puerta", "Embalaje profesional", "Fotos del estado"]
     },
     {
       icon: Truck,

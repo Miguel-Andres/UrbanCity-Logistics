@@ -1,21 +1,9 @@
 "use client";
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Truck, MapPin, Phone, Mail, Send, Facebook, Twitter, Instagram, Linkedin, ChevronRight, Shield, Award, Headphones } from 'lucide-react'
+import { Truck, MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, ChevronRight, Shield, Award, Headphones } from 'lucide-react'
 
 export default function Footer() {
-  const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (email) {
-      setSubscribed(true)
-      setTimeout(() => setSubscribed(false), 3000)
-      setEmail('')
-    }
-  }
 
   const services = [
     { text: 'Mensajería Urbana', href: '/servicios/mensajeria' },
@@ -40,36 +28,6 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-white">
-      {/* Newsletter Section */}
-      <div className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-bold mb-2">🚀 Recibe Ofertas Exclusivas</h3>
-              <p className="text-gray-400">Suscríbete y obtén 15% de descuento en tu primer envío</p>
-            </div>
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Tu correo electrónico"
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:border-orange-500 focus:outline-none text-white"
-                required
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center space-x-2"
-              >
-                <Send className="w-5 h-5" />
-                <span>{subscribed ? '¡Suscrito!' : 'Suscribirse'}</span>
-              </motion.button>
-            </form>
-          </div>
-        </div>
-      </div>
 
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

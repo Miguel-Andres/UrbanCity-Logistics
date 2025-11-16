@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Menu, X, Truck, ChevronDown, User, HeadphonesIcon, Phone, Mail, MapPin, Zap, Shield, Clock } from 'lucide-react'
+import { Search, Menu, X, Truck, ChevronDown, User, HeadphonesIcon, Phone, Mail,  Clock } from 'lucide-react'
 
 const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
   e.preventDefault()
@@ -68,26 +68,21 @@ export default function Header() {
   const solutions = [
     { 
       title: "Retail y Tiendas", 
-      desc: "Delivery para tu negocio",
-      href: "/soluciones/retail",
+      desc: "envios para tu negocio",
+      href: "/",
       icon: "🏪"
     },
     { 
-      title: "Restaurantes", 
-      desc: "Delivery de alimentos",
-      href: "/soluciones/restaurantes",
+      title: "Mercado envio Flex y Tineda Nube", 
+      desc: "Envios Diarios entrega Same Day",
+      href: "",
       icon: "🍽️"
     },
-    { 
-      title: "Farmacias", 
-      desc: "Entregas de medicamentos",
-      href: "/soluciones/farmacias",
-      icon: "💊"
-    },
+  ,
     { 
       title: "Documentación", 
       desc: "Entrega de documentos legales",
-      href: "/soluciones/documentos",
+      href: "/",
       icon: "📄"
     }
   ]
@@ -103,27 +98,7 @@ export default function Header() {
   return (
     <>
       <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white shadow-sm'}`}>
-        {/* Top Bar - Info */}
-        <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white py-2 px-4">
-          <div className="container mx-auto flex justify-between items-center text-sm">
-            <div className="hidden md:flex items-center space-x-6">
-              <span className="flex items-center space-x-1">
-                <Phone className="w-4 h-4" />
-                <span>(01) 234-5678</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <Mail className="w-4 h-4" />
-                <span>hola@urbancity.com</span>
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1">
-                <Clock className="w-4 h-4" />
-                <span>Atención 24/7</span>
-              </span>
-            </div>
-          </div>
-        </div>
+    
 
         {/* Main Navigation */}
         <div className="container mx-auto px-4">
@@ -275,13 +250,7 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href="/nosotros" className="text-gray-700 hover:text-orange-600 transition-colors font-semibold px-4 py-3 rounded-lg hover:bg-orange-50/50">
-                Nosotros
-              </Link>
-
-              <Link href="/contacto" className="text-gray-700 hover:text-orange-600 transition-colors font-semibold px-4 py-3 rounded-lg hover:bg-orange-50/50">
-                Contacto
-              </Link>
+           
             </nav>
 
             {/* Right side actions */}

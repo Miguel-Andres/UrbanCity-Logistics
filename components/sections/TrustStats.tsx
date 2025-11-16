@@ -12,9 +12,9 @@ export default function TrustStats() {
   const stats = [
     {
       icon: Truck,
-      value: "15,000+",
-      label: "Envíos Diarios",
-      description: "Paquetes entregados cada día",
+      value: "10,000+",
+      label: "Envíos Mensuales",
+      description: "Paquetes entregados mensuales",
       color: "text-orange-600",
       bgColor: "bg-orange-100"
     },
@@ -36,9 +36,9 @@ export default function TrustStats() {
     },
     {
       icon: Users,
-      value: "2,500+",
+      value: "100+",
       label: "Clientes Felices",
-      description: "Empresas que confían en nosotros",
+      description: "clientes que confían en nosotros",
       color: "text-purple-600",
       bgColor: "bg-purple-100"
     }
@@ -46,22 +46,22 @@ export default function TrustStats() {
 
   const testimonials = [
     {
-      name: "María González",
+      name: "Marvin Melean ",
       company: "Tienda Online Chic",
       text: "Mis paquetes llegan antes de lo prometido. ¡Excelente servicio!",
       rating: 5,
       image: "👩‍💼"
     },
     {
-      name: "Carlos Rodríguez",
-      company: "Restaurante El Sabor",
+      name: "Fabiola Rodríguez",
+      company: "ROSTE STORE",
       text: "La logística de entregas transformó nuestro negocio. 100% recomendado.",
       rating: 5,
       image: "👨‍🍳"
     },
     {
-      name: "Ana Martínez",
-      company: "Farmacia Salud",
+      name: "Federico Martínez",
+      company: "Farmacias PLUS",
       text: "Confiables y rápidos. Nunca nos han fallado en 2 años.",
       rating: 5,
       image: "👩‍⚕️"
@@ -166,17 +166,17 @@ export default function TrustStats() {
           <div className="inline-flex items-center space-x-8 px-8 py-4 bg-gray-50 rounded-full">
             <div className="flex items-center space-x-2">
               <Award className="w-5 h-5 text-orange-600" />
-              <span className="font-semibold text-gray-900">Mejor Servicio 2024</span>
+              <span className="font-semibold text-gray-900">Mejor Servicio 2020</span>
             </div>
             <div className="w-px h-6 bg-gray-300"></div>
             <div className="flex items-center space-x-2">
               <Shield className="w-5 h-5 text-green-600" />
-              <span className="font-semibold text-gray-900">Certificado ISO 9001</span>
+              <span className="font-semibold text-gray-900">Trayectoria 5+ años</span>
             </div>
             <div className="w-px h-6 bg-gray-300"></div>
             <div className="flex items-center space-x-2">
               <Globe className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold text-gray-900">Cobertura Nacional</span>
+              <span className="font-semibold text-gray-900">Cobertura CABA Y GCBA</span>
             </div>
           </div>
         </motion.div>

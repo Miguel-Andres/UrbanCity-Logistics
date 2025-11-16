@@ -126,7 +126,7 @@ export default function Hero() {
                     value={trackingCode}
                     onChange={(e) => setTrackingCode(e.target.value.toUpperCase())}
                     placeholder="Ej: UCS-2024-123456"
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors placeholder-gray-700 text-gray-900"
                     onKeyPress={(e) => e.key === 'Enter' && handleTrack()}
                   />
                   <Search className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
