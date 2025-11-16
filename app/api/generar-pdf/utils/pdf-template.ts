@@ -439,11 +439,11 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
             <!-- Datos del Destinatario -->
             <div class="section destinatario-section">
               <div class="section-content">
-                <div><strong>${datos.nombre || 'No especificado'}</strong></div>
-                <div>📱 ${datos.telefono || 'No especificado'}</div>
+                <div>Nombre :<strong>${datos.nombre || 'No especificado'}</strong></div>
+                <div>📱 telefono : ${datos.telefono || 'No especificado'}</div>
                 ${datos.direccion ? `<div>🏠 ${datos.direccion}</div>` : ''}
-                <div>📍 ${datos.localidad || 'No especificado'}</div>
-                ${datos.entreCalles ? `<div>🗺️ Entre: ${datos.entreCalles}</div>` : ''}
+                <div>📍localidad : ${datos.localidad || 'No especificado'}</div>
+                ${datos.entreCalles ? `<div>🗺️ EntreCalles: ${datos.entreCalles}</div>` : ''}
               </div>
             </div>
             

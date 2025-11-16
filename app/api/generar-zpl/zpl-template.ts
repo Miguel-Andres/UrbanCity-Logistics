@@ -43,12 +43,12 @@ export function generarZPLEstandar(datos: FormData): string {
 ^FO400,280^CF0,30^FDFecha: ${fechaFormateada}^FS
 ^FO50,320^GB700,1,1^FS
 ^FO50,340^CF0,30^FDNombre:^FS
-^FO200,340^CF0,25^FD${datos.nombre}^FS
+^FO200,340^CF0,30^FD${datos.nombre}^FS
 ^FO50,375^CF0,30^FDTelefono:^FS
 ^FO200,375^CF0,30^FD${datos.telefono}^FS
 ^FO50,405^CF0,30^FDDireccion:^FS
 ^FO200,405^CF0,30^FD${datos.direccion}^FS
-^FO50,435^CF0,30^FDLOC:^FS
+^FO50,435^CF0,30^FDLocalidad:^FS
 ^FO200,435^CF0,30^FD${datos.localidad}^FS`
   
   // Agregar entre calles si existe
