@@ -43,13 +43,13 @@ export function generarZPLEstandar(datos: FormData): string {
 ^FO400,280^CF0,30^FDFecha: ${fechaFormateada}^FS
 ^FO50,320^GB700,1,1^FS
 ^FO50,340^CF0,30^FDNombre:^FS
-^FO200,340^CF0,25^FD${datos.nombreDestinatario}^FS
+^FO200,340^CF0,25^FD${datos.nombre}^FS
 ^FO50,375^CF0,30^FDTelefono:^FS
-^FO200,375^CF0,30^FD${datos.telefonoDestinatario}^FS
+^FO200,375^CF0,30^FD${datos.telefono}^FS
 ^FO50,405^CF0,30^FDDireccion:^FS
 ^FO200,405^CF0,30^FD${datos.direccion}^FS
 ^FO50,435^CF0,30^FDLOC:^FS
-^FO200,435^CF0,30^FD${datos.localidadDestinatario}^FS`
+^FO200,435^CF0,30^FD${datos.localidad}^FS`
   
   // Agregar entre calles si existe
   if (datos.entreCalles) {
@@ -79,7 +79,7 @@ export function generarZPLEstandar(datos: FormData): string {
   }
   
   // Generar QR con todos los datos relevantes
-  const qrData = `MA,UCL|${datos.nombreDestinatario}|${datos.telefonoDestinatario}|${datos.direccion}|${datos.localidadDestinatario}|${producto}|${montoNumero}|${datos.tipoEnvio}|${datos.tipoEntrega}`
+  const qrData = `MA,UCL|${datos.nombre}|${datos.telefono}|${datos.direccion}|${datos.localidad}|${producto}|${montoNumero}|${datos.tipoEnvio}|${datos.tipoEntrega}`
   
   zpl += `\n^FO250,740^BQN,2,8^FD${qrData}^FS
 ^FO250,1100^CF0,30^FD${codigoSeguimiento}^FS

@@ -11,16 +11,12 @@ export function useMultipleLabels() {
   const addNewLabel = () => {
     const newLabel: LabelData = {
       id: Date.now().toString(),
-      nombreDestinatario: '',
-      telefonoDestinatario: '',
-      direccionDestinatario: '',
-      cpDestinatario: '',
-      localidad: 'La Plata',
-      variante: '',
-      totalACobrar: '0',
-      montoCobrar: '',
-      observaciones: '',
-      chat: ''
+      nombre: '',
+      telefono: '',
+      direccion: '',
+      localidad: '',
+      montoACobrar: 0,
+      observaciones: ''
     }
     setLabels(prev => [...prev, newLabel])
   }
@@ -38,16 +34,12 @@ export function useMultipleLabels() {
   const setLabelsFromExtraction = (extractedLabels: Partial<LabelData>[]) => {
     const newLabels: LabelData[] = extractedLabels.map((extracted, index) => ({
       id: Date.now().toString() + Math.random(),
-      nombreDestinatario: extracted.nombreDestinatario || '',
-      telefonoDestinatario: extracted.telefonoDestinatario || '',
-      direccionDestinatario: extracted.direccionDestinatario || '',
-      cpDestinatario: extracted.cpDestinatario || '',
+      nombre: extracted.nombre || '',
+      telefono: extracted.telefono || '',
+      direccion: extracted.direccion || '',
       localidad: extracted.localidad || 'La Plata',
-      variante: extracted.variante || '',
-      totalACobrar: extracted.totalACobrar || '0',
-      montoCobrar: extracted.montoCobrar || '',
-      observaciones: extracted.observaciones || '',
-      chat: extracted.chat || ''
+      montoACobrar: extracted.montoACobrar || 0,
+      observaciones: extracted.observaciones || ''
     }))
     setLabels(newLabels)
   }

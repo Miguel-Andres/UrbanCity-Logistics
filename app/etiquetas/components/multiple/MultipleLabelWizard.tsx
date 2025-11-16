@@ -4,66 +4,59 @@
 'use client'
 
 import { useState } from 'react'
-import { useLabelForm } from '@/app/etiquetas/hooks/useLabelForm'
-import { useChatExtraction } from '@/app/etiquetas/hooks/useChatExtraction'
-import { usePDFGeneration } from '@/app/etiquetas/hooks/usePDFGeneration'
+import ChatInput from '@/app/etiquetas/components/shared/ChatInput'
 import { useMultipleLabels } from '@/app/etiquetas/hooks/useMultipleLabels'
-import MultipleChatInput from '@/app/etiquetas/components/multiple/MultipleChatInput'
 import MultipleLabelsList from '@/app/etiquetas/components/multiple/MultipleLabelsList'
-import MultiplePreview from '@/app/etiquetas/components/multiple/MultiplePreview'
 import { LabelData } from '@/app/etiquetas/types'
 
 export default function MultipleLabelWizard() {
-  const { formData } = useLabelForm()
-  const { chatText, setChatText, extractMultipleDataFromChat } = useChatExtraction()
-  const { isGenerating, multiplePdfUrls, generateMultiplePDFs, downloadAllPDFs } = usePDFGeneration()
-  const { labels, updateLabel, removeLabel, addNewLabel, setLabelsFromExtraction } = useMultipleLabels()
+  const { labels, updateLabel, removeLabel, addNewLabel } = useMultipleLabels()
+  const [chatText, setChatText] = useState('')
+  const [formData, setFormData] = useState({
+    chat: '',
+    nroEnvio: '',
+    nombreVendedor: '',
+    tipoEtiqueta: '10x15',
+    variante: '',
+    localidad: '',
+    tipoEnvio: 'VENTA',
+    nombreDestinatario: '',
+    telefonoDestinatario: '',
+    direccionDestinatario: '',
+    localidadDestinatario: '',
+    entreCalles: '',
+    observaciones: '',
+    cpDestinatario: '',
+    tipoEntrega: 'SOLO ENTREGAR',
+    totalACobrar: 0,
+    montoCobrar: 0
+  })
 
-  const handleExtractMultiple = async () => {
-    const extractedData = await extractMultipleDataFromChat(chatText)
-    const labelsData = extractedData.map(data => ({
-      ...data,
-      id: Date.now().toString() + Math.random(),
-      variante: '',
-      observaciones: ''
-    }))
-    setLabelsFromExtraction(labelsData)
+  const handleExtractMultiple = () => {
+    // Función vacía - no funcional
   }
 
-  const handleGenerateAll = async () => {
-    // Convert LabelData[] to FormData[] by merging with base formData
-    const formDataList = labels.map(label => ({
-      ...formData,
-      nombreDestinatario: label.nombreDestinatario,
-      telefonoDestinatario: label.telefonoDestinatario,
-      direccionDestinatario: label.direccionDestinatario,
-      cpDestinatario: label.cpDestinatario,
-      localidad: label.localidad,
-      observaciones: label.observaciones,
-      totalACobrar: label.totalACobrar,
-      montoCobrar: label.montoCobrar,
-      variante: label.variante,
-      chat: label.chat
-    }))
-    await generateMultiplePDFs(formDataList, formData)
+  const handleGenerateAll = () => {
+    // Función vacía - no funcional
   }
 
   const handleDownloadAll = () => {
-    downloadAllPDFs(multiplePdfUrls)
+    // Función vacía - no funcional
   }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 md:p-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Chat Input and Labels List */}
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 gap-8">
+        {/* Chat Input and Labels List */}
+        <div className="space-y-8">
           {/* Chat Input */}
-          <MultipleChatInput
+          <ChatInput
             value={chatText}
             onChange={setChatText}
             onExtract={handleExtractMultiple}
-            onAddManual={addNewLabel}
+            height="compact"
             isExtracting={false}
+            width="full"
           />
 
           {/* Labels List */}
@@ -72,22 +65,14 @@ export default function MultipleLabelWizard() {
             onUpdate={updateLabel}
             onRemove={removeLabel}
             onGenerateAll={handleGenerateAll}
-            isGenerating={isGenerating}
-            hasGeneratedPDFs={multiplePdfUrls.length > 0}
-            pdfCount={multiplePdfUrls.length}
+            isGenerating={false}
+            hasGeneratedPDFs={false}
+            pdfCount={0}
             onDownloadAll={handleDownloadAll}
           />
         </div>
 
-        {/* Right Column - Preview */}
-        <div className="lg:sticky lg:top-24 h-fit">
-          <MultiplePreview
-            labels={labels}
-            hasGeneratedPDFs={multiplePdfUrls.length > 0}
-            pdfCount={multiplePdfUrls.length}
-          />
         </div>
-      </div>
     </div>
   )
 }

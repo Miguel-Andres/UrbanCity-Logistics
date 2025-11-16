@@ -427,7 +427,7 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
           <!-- Información Básica - Vendedor y Fecha -->
           <div class="basic-info">
             <div class="info-item">
-              <span class="info-label">Vendedor:</span> ${datos.nombreVendedor || 'No especificado'}
+              <span class="info-label">Vendedor:</span> STOREBA
             </div>
             <div class="info-item">
               <span class="info-label">Fecha:</span> ${fechaFormateada}
@@ -439,10 +439,10 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
             <!-- Datos del Destinatario -->
             <div class="section destinatario-section">
               <div class="section-content">
-                <div><strong>${datos.nombreDestinatario || 'No especificado'}</strong></div>
-                <div>📱 ${datos.telefonoDestinatario || 'No especificado'}</div>
+                <div><strong>${datos.nombre || 'No especificado'}</strong></div>
+                <div>📱 ${datos.telefono || 'No especificado'}</div>
                 ${datos.direccion ? `<div>🏠 ${datos.direccion}</div>` : ''}
-                <div>📍 ${datos.localidadDestinatario || datos.localidad || 'No especificado'}</div>
+                <div>📍 ${datos.localidad || 'No especificado'}</div>
                 ${datos.entreCalles ? `<div>🗺️ Entre: ${datos.entreCalles}</div>` : ''}
               </div>
             </div>

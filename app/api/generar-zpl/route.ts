@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const data: FormData = await request.json()
 
     // Validaciones básicas
-    if (!data.nombreDestinatario || !data.telefonoDestinatario) {
+    if (!data.nombre || !data.telefono) {
       return NextResponse.json(
         { error: 'Faltan campos requeridos: nombre del destinatario y teléfono' },
         { status: 400 }
@@ -23,13 +23,13 @@ export async function POST(request: NextRequest) {
     const zplCode = generarTemplateZPL(data)
 
     // Registrar en consola para seguimiento
-    console.log(`ZPL generado para: ${data.nombreDestinatario} - ${data.localidadDestinatario}`)
+    console.log(`ZPL generado para: ${data.nombre} - ${data.localidad}`)
 
     // Devolver el código ZPL como texto
     return new NextResponse(zplCode, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Content-Disposition': `attachment; filename="etiqueta-${data.nombreDestinatario?.replace(/\s+/g, '').substring(0, 11)}-${Math.floor(Math.random() * 1000)}.zpl"`
+        'Content-Disposition': `attachment; filename="${data.nombre?.substring(0, 11).replace(/\s+/g, '') || 'etiqueta'}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}.zpl"`
       }
     })
 

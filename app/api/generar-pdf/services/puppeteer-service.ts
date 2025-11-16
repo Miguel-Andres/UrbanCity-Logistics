@@ -38,7 +38,7 @@ class PuppeteerService {
    */
   async generarPDF(data: PDFData): Promise<GeneratedPDFResponse> {
     try {
-      console.log(`Generando PDF para: ${data.nombreDestinatario || 'Desconocido'}`)
+      console.log(`Generando PDF para: ${data.nombre || 'Desconocido'}`)
       
       // Inicializar el navegador
       const browser = await this.initializeBrowser()
@@ -85,12 +85,11 @@ class PuppeteerService {
       console.log('PDF generado exitosamente')
 
       // Generar nombre de archivo
-      const timestamp = Date.now()
-      const nombreArchivo = `etiqueta_${data.nombreDestinatario?.replace(/[^a-zA-Z0-9]/g, '_') || 'envio'}_${timestamp}.pdf`
+      const nombreArchivo = `${data.nombre?.substring(0, 11).replace(/\s+/g, '') || 'envio'}.pdf`
 
       return {
         success: true,
-        pdf: pdfBuffer,
+        pdf: Buffer.from(pdfBuffer),
         filename: nombreArchivo
       }
 

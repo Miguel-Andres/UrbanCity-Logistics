@@ -19,21 +19,21 @@ export async function POST(request: NextRequest) {
     // Parsear los datos del request
     const datos: PDFData = await request.json()
     console.log('Datos recibidos:', {
-      nombreDestinatario: datos.nombreDestinatario,
-      telefonoDestinatario: datos.telefonoDestinatario,
+      nombre: datos.nombre,
+      telefono: datos.telefono,
       tipoEtiqueta: datos.tipoEtiqueta,
       tipoEnvio: datos.tipoEnvio,
       tipoEntrega: datos.tipoEntrega
     })
     
     // Validar datos mínimos requeridos
-    if (!datos.nombreDestinatario || !datos.telefonoDestinatario) {
+    if (!datos.nombre || !datos.telefono) {
       console.warn('Validación fallida: Faltan campos obligatorios')
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'Nombre y teléfono son obligatorios',
-          required_fields: ['nombreDestinatario', 'telefonoDestinatario']
+          required_fields: ['nombre', 'telefono']
         }),
         {
           status: 400,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     console.log(`PDF generado exitosamente en ${duration}ms. Tamaño: ${resultado.pdf.length} bytes`)
 
     // Devolver el PDF
-    return new Response(resultado.pdf, {
+    return new Response(resultado.pdf as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

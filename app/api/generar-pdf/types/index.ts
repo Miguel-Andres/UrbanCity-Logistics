@@ -3,15 +3,15 @@
  */
 
 export interface PDFData {
-  nombreDestinatario: string
-  telefonoDestinatario: string
-  localidadDestinatario?: string
+  nombre: string
+  telefono: string
   localidad?: string
   entreCalles?: string
+  direccion?: string
   fecha?: string
   tipoEnvio?: string
   tipoEntrega?: string
-  montoACobrar?: string
+  montoACobrar?: number
   observaciones?: string
   tipoEtiqueta?: string
 }

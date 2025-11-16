@@ -31,16 +31,17 @@ export default function Tabs({ activeTab, onTabChange }: TabsProps) {
               </div>
             </button>
             <button
-              onClick={() => onTabChange('multiple')}
-              className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                activeTab === 'multiple'
-                  ? 'bg-orange-500 text-white shadow-lg'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
-              }`}
+              onClick={() => {}}
+              disabled
+              className="px-8 py-3 rounded-xl font-semibold transition-all duration-300 bg-gray-100 text-gray-400 cursor-not-allowed relative"
+              title="Próximamente disponible"
             >
               <div className="flex items-center space-x-2">
                 <BarChart3 className="w-5 h-5" />
                 <span>Múltiples Etiquetas</span>
+                <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                  Próximamente
+                </span>
               </div>
             </button>
           </div>

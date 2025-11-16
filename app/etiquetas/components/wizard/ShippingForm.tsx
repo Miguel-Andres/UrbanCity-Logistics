@@ -29,7 +29,7 @@ export default function ShippingForm({
       const dd = String(today.getDate()).padStart(2, '0')
       const mm = String(today.getMonth() + 1).padStart(2, '0')
       const yyyy = today.getFullYear()
-      const fechaFormato = `${yyyy}-${mm}-${dd}` // Formato para input date
+      const fechaFormato = `${dd}-${mm}-${yyyy}` // Formato DD-MM-YYYY
       onFieldChange('fecha', fechaFormato)
     }
   }, [formData.tipoEntrega, formData.fecha, onFieldChange])
@@ -58,8 +58,8 @@ export default function ShippingForm({
             </label>
             <input
               type="text"
-              value={formData.nombreDestinatario ?? ''}
-              onChange={(e) => onFieldChange('nombreDestinatario', e.target.value)}
+              value={formData.nombre ?? ''}
+              onChange={(e) => onFieldChange('nombre', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
               placeholder="Juan Pérez"
             />
@@ -73,10 +73,10 @@ export default function ShippingForm({
             </label>
             <input
               type="tel"
-              value={formData.telefonoDestinatario ?? ''}
-              onChange={(e) => onFieldChange('telefonoDestinatario', e.target.value)}
+              value={formData.telefono ?? ''}
+              onChange={(e) => onFieldChange('telefono', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
-              placeholder="+56 9 1234 5678"
+              placeholder="123 456 789"
             />
           </div>
 
@@ -102,10 +102,10 @@ export default function ShippingForm({
             </label>
             <input
               type="text"
-              value={formData.localidadDestinatario ?? ''}
-              onChange={(e) => onFieldChange('localidadDestinatario', e.target.value)}
+              value={formData.localidad ?? ''}
+              onChange={(e) => onFieldChange('localidad', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
-              placeholder="Santiago Centro"
+              placeholder=" CABA"
             />
           </div>
         </div>

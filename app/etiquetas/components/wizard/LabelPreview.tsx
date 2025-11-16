@@ -31,11 +31,11 @@ export default function LabelPreview({
     const errors: string[] = []
 
     // Validaciones obligatorias
-    if (!formData.nombreDestinatario || formData.nombreDestinatario.trim() === '') {
+    if (!formData.nombre || formData.nombre.trim() === '') {
       errors.push('Nombre del destinatario')
     }
     
-    if (!formData.telefonoDestinatario || formData.telefonoDestinatario.trim() === '') {
+    if (!formData.telefono || formData.telefono.trim() === '') {
       errors.push('Teléfono del destinatario');
     }
     
@@ -43,7 +43,7 @@ export default function LabelPreview({
       errors.push('Dirección');
     }
     
-    if (!formData.localidadDestinatario || formData.localidadDestinatario.trim() === '') {
+    if (!formData.localidad || formData.localidad.trim() === '') {
       errors.push('Localidad');
     }
     
@@ -133,7 +133,7 @@ export default function LabelPreview({
         const a = document.createElement('a')
         a.style.display = 'none'
         a.href = url
-        a.download = `etiqueta-${selectedSize}-${Date.now()}.zpl`
+        a.download = `${formData.nombre?.substring(0, 11).replace(/\s+/g, '') || 'etiqueta'}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}.zpl`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)

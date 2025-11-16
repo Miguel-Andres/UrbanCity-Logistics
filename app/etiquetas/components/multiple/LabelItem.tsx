@@ -24,8 +24,8 @@ export default function LabelItem({ label, index, onUpdate, onRemove }: LabelIte
           <div className="flex-1">
             <input
               type="text"
-              value={label.nombreDestinatario}
-              onChange={(e) => onUpdate(label.id || `label-${index}`, 'nombreDestinatario', e.target.value)}
+              value={label.nombre}
+              onChange={(e) => onUpdate(label.id || `label-${index}`, 'nombre', e.target.value)}
               className="font-bold text-gray-900 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-orange-500 focus:outline-none px-2 py-1 text-lg transition-all duration-200"
               placeholder="Nombre del destinatario"
             />
@@ -47,8 +47,8 @@ export default function LabelItem({ label, index, onUpdate, onRemove }: LabelIte
             <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
             <input
               type="tel"
-              value={label.telefonoDestinatario}
-              onChange={(e) => onUpdate(label.id || `label-${index}`, 'telefonoDestinatario', e.target.value)}
+              value={label.telefono}
+              onChange={(e) => onUpdate(label.id || `label-${index}`, 'telefono', e.target.value)}
               className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
               placeholder="+56 9 1234 5678"
             />
@@ -75,8 +75,8 @@ export default function LabelItem({ label, index, onUpdate, onRemove }: LabelIte
             <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              value={label.direccionDestinatario}
-              onChange={(e) => onUpdate(label.id || `label-${index}`, 'direccionDestinatario', e.target.value)}
+              value={label.direccion}
+              onChange={(e) => onUpdate(label.id || `label-${index}`, 'direccion', e.target.value)}
               className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
               placeholder="Calle 123, entre esquinas"
             />

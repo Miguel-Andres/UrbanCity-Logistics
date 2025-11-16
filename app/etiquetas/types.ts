@@ -5,9 +5,9 @@
 // Tipo para datos del formulario (solo los campos necesarios)
 export interface FormData {
   // Datos del destinatario
-  nombreDestinatario: string
-  telefonoDestinatario: string
-  localidadDestinatario?: string
+  nombre: string
+  telefono: string
+  localidad?: string
   entreCalles?: string
   direccion?: string
   
@@ -37,13 +37,6 @@ export interface LabelData extends FormData {
 export type TipoEtiqueta = '10x10' | '10x15' | 'A4'
 export type TabType = 'single' | 'multiple'
 export type StepType = 1 | 2 | 3
-
-// Tipo para resultados de parseo de chat
-export interface ChatParseResult {
-  data: Partial<FormData>
-  confidence?: number
-  missing?: string[]
-}
 
 // Estado de generación de PDF
 export interface PDFGenerationState {
