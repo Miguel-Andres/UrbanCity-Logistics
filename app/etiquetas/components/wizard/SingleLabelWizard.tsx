@@ -65,15 +65,27 @@ export default function SingleLabelWizard() {
         <p className="text-sm text-gray-500">Convierte mensajes en etiquetas profesionales</p>
       </div>
 
-      {/* Chat Input - Arriba (solo visual) */}
+      {/* Chat Input - Desactivado */}
       <div className="mb-8">
-        <ChatInput
-          value={chatText}
-          onChange={setChatText}
-          onExtract={handleExtractData}
-          isExtracting={false}
-          height="compact"
-        />
+        <div className="relative">
+          <div className="absolute inset-0 bg-gray-100 bg-opacity-60 rounded-lg z-10 flex items-center justify-center">
+            <div className="text-center">
+              <svg className="w-6 h-6 text-gray-400 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <p className="text-xs text-gray-500 font-medium">Función desactivada</p>
+            </div>
+          </div>
+          <div className="opacity-30 pointer-events-none">
+            <ChatInput
+              value={chatText}
+              onChange={setChatText}
+              onExtract={handleExtractData}
+              isExtracting={false}
+              height="compact"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
