@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Urban City Logistics",
-  description: "Plataforma moderna de gestión logística para entornos urbanos",
+  title: "Generador de Etiquetas Urban City Logistics",
+  description: "Genera etiquetas profesionales de envío a partir de mensajes de WhatsApp y formularios",
 };
 
 export default function RootLayout({
