@@ -2,7 +2,7 @@
  * Template HTML minimalista para generar PDFs de etiquetas
  */
 import { PDFData } from '../types'
-import QRCode from 'qrcode'
+import * as QRCode from 'qrcode'
 
 const MEDIDAS_ETIQUETAS = {
   '10x10': { width: 283.44, height: 283.44 },
