@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     return new NextResponse(zplCode, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${data.nombre?.substring(0, 11).replace(/\s+/g, '') || 'etiqueta'}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}.zpl"`
+        'Content-Disposition': `attachment; filename="${data.nombre?.substring(0, 11).replace(/\s+/g, '') || 'etiqueta'}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}.txt"`
       }
     })
 
