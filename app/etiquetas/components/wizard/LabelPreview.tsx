@@ -133,7 +133,7 @@ export default function LabelPreview({
         const a = document.createElement('a')
         a.style.display = 'none'
         a.href = url
-        a.download = `${formData.nombre?.substring(0, 11).replace(/\s+/g, '') || 'etiqueta'}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}.txt`
+        a.download = `etiqueta-${formData.tipoEnvio?.replace(/\s+/g, '') || 'SINTIPO'}-${formData.nombre?.substring(0, 12).replace(/\s+/g, '') || 'SINNOMBRE'}.txt`
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
