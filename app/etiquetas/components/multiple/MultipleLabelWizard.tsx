@@ -5,12 +5,12 @@
 
 import { useState } from 'react'
 import ChatInput from '@/app/etiquetas/components/shared/ChatInput'
-import { useMultipleLabels } from '@/app/etiquetas/hooks/useMultipleLabels'
+import { useLabels, useMultipleLabelsStore } from '@/lib/stores/useMultipleLabelsStore'
 import MultipleLabelsList from '@/app/etiquetas/components/multiple/MultipleLabelsList'
-import { LabelData } from '@/app/etiquetas/types'
 
 export default function MultipleLabelWizard() {
-  const { labels, updateLabel, removeLabel, addNewLabel } = useMultipleLabels()
+  const labels = useLabels()
+  const { updateLabel, removeLabel, addLabel } = useMultipleLabelsStore()
   const [chatText, setChatText] = useState('')
   const [formData, setFormData] = useState({
     chat: '',
@@ -62,7 +62,7 @@ export default function MultipleLabelWizard() {
           {/* Labels List */}
           <MultipleLabelsList
             labels={labels}
-            onUpdate={updateLabel}
+            onUpdate={(id, field, value) => updateLabel(id, { [field]: value })}
             onRemove={removeLabel}
             onGenerateAll={handleGenerateAll}
             isGenerating={false}

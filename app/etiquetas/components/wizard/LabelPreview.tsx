@@ -5,23 +5,20 @@
 
 import { useState } from 'react'
 import { FileText, Download, Printer, Settings, Barcode } from 'lucide-react'
-import { FormData } from '@/app/etiquetas/types'
-
-interface LabelPreviewProps {
-  formData: FormData
-  onPrevStep?: () => void
-  onNextStep?: () => void
-  nextStepLabel?: string
-  nextStepDisabled?: boolean
-}
+import { useFormData } from '@/lib/stores/useLabelStore'
 
 export default function LabelPreview({ 
-  formData, 
   onPrevStep, 
   onNextStep, 
   nextStepLabel = "Siguiente",
   nextStepDisabled = false 
-}: LabelPreviewProps) {
+}: { 
+  onPrevStep?: () => void
+  onNextStep?: () => void
+  nextStepLabel?: string
+  nextStepDisabled?: boolean 
+}) {
+  const formData = useFormData()
   const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')

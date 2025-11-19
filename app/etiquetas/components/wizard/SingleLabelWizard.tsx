@@ -8,30 +8,11 @@ import ChatInput from '@/app/etiquetas/components/shared/ChatInput'
 import ShippingForm from '@/app/etiquetas/components/wizard/ShippingForm'
 import LabelPreview from '@/app/etiquetas/components/wizard/LabelPreview'
 import { FormData } from '@/app/etiquetas/types'
+import { useLabelStore } from '@/lib/stores/useLabelStore'
 
 export default function SingleLabelWizard() {
   const [chatText, setChatText] = useState('')
-  const [formData, setFormData] = useState<FormData>({
-    tipoEtiqueta: '10x15',
-    tipoEnvio: 'VENTA',
-    nombre: '',
-    telefono: '',
-    direccion: '',
-    localidad: '',
-    entreCalles: '',
-    observaciones: '',
-    tipoEntrega: 'SOLO ENTREGAR',
-    montoACobrar: 0,
-    fecha: new Date().toISOString().split('T')[0]
-  })
-
-  const updateField = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const updateMultipleFields = (fields: Partial<FormData>) => {
-    setFormData(prev => ({ ...prev, ...fields }))
-  }
+  const { formData, updateField, updateMultipleFields, resetForm } = useLabelStore()
 
   const handleExtractData = () => {
     // Función vacía - no funcional
@@ -42,19 +23,7 @@ export default function SingleLabelWizard() {
   }
 
   const handleReset = () => {
-    setFormData({
-      tipoEtiqueta: '10x15',
-      tipoEnvio: 'VENTA',
-      nombre: '',
-      telefono: '',
-      direccion: '',
-      localidad: '',
-      entreCalles: '',
-      observaciones: '',
-      tipoEntrega: 'SOLO ENTREGAR',
-      montoACobrar: 0,
-      fecha: new Date().toISOString().split('T')[0]
-    })
+    resetForm()
   }
 
   return (
@@ -91,18 +60,12 @@ export default function SingleLabelWizard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Formulario - Izquierda */}
         <div>
-          <ShippingForm
-            formData={formData}
-            onFieldChange={updateField}
-            onMultipleFieldChange={updateMultipleFields}
-          />
+          <ShippingForm />
         </div>
 
         {/* Panel de Acción Rápida - Derecha */}
         <div>
-          <LabelPreview
-            formData={formData}
-          />
+          <LabelPreview />
         </div>
       </div>
     </div>

@@ -6,18 +6,10 @@
 import { useState, useEffect } from 'react'
 import { User, Phone, Calendar, MapPin, MessageSquare, DollarSign } from 'lucide-react'
 import { FormData } from '@/app/etiquetas/types'
+import { useLabelStore } from '@/lib/stores/useLabelStore'
 
-interface ShippingFormProps {
-  formData: FormData
-  onFieldChange: (field: keyof FormData, value: any) => void
-  onMultipleFieldChange: (fields: Partial<FormData>) => void
-}
-
-export default function ShippingForm({
-  formData,
-  onFieldChange,
-  onMultipleFieldChange
-}: ShippingFormProps) {
+export default function ShippingForm() {
+  const { formData, updateField, updateMultipleFields } = useLabelStore()
   const [showMonto, setShowMonto] = useState(formData.tipoEntrega === 'COBRAR')
 
   useEffect(() => {
@@ -30,14 +22,14 @@ export default function ShippingForm({
       const mm = String(today.getMonth() + 1).padStart(2, '0')
       const yyyy = today.getFullYear()
       const fechaFormato = `${dd}-${mm}-${yyyy}` // Formato DD-MM-YYYY
-      onFieldChange('fecha', fechaFormato)
+      updateField('fecha', fechaFormato)
     }
-  }, [formData.tipoEntrega, formData.fecha, onFieldChange])
+  }, [formData.tipoEntrega, formData.fecha, updateField])
 
   const handleTipoEntregaChange = (value: string) => {
-    onFieldChange('tipoEntrega', value)
+    updateField('tipoEntrega', value)
     if (value === 'SOLO ENTREGAR') {
-      onFieldChange('montoACobrar', '')
+      updateField('montoACobrar', 0)
     }
   }
 
@@ -59,7 +51,7 @@ export default function ShippingForm({
             <input
               type="text"
               value={formData.nombre ?? ''}
-              onChange={(e) => onFieldChange('nombre', e.target.value)}
+              onChange={(e) => updateField('nombre', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
               placeholder="Juan Pérez"
             />
@@ -74,7 +66,7 @@ export default function ShippingForm({
             <input
               type="tel"
               value={formData.telefono ?? ''}
-              onChange={(e) => onFieldChange('telefono', e.target.value)}
+              onChange={(e) => updateField('telefono', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
               placeholder="123 456 789"
             />
@@ -89,7 +81,7 @@ export default function ShippingForm({
             <input
               type="date"
               value={formData.fecha ?? ''}
-              onChange={(e) => onFieldChange('fecha', e.target.value)}
+              onChange={(e) => updateField('fecha', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
             />
           </div>
@@ -103,7 +95,7 @@ export default function ShippingForm({
             <input
               type="text"
               value={formData.localidad ?? ''}
-              onChange={(e) => onFieldChange('localidad', e.target.value)}
+              onChange={(e) => updateField('localidad', e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
               placeholder=" CABA"
             />
@@ -119,7 +111,7 @@ export default function ShippingForm({
           <input
             type="text"
             value={formData.direccion ?? ''}
-            onChange={(e) => onFieldChange('direccion', e.target.value)}
+            onChange={(e) => updateField('direccion', e.target.value)}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
             placeholder="Calle, altura, piso, departamento"
           />
@@ -133,7 +125,7 @@ export default function ShippingForm({
           <input
             type="text"
             value={formData.entreCalles ?? ''}
-            onChange={(e) => onFieldChange('entreCalles', e.target.value)}
+            onChange={(e) => updateField('entreCalles', e.target.value)}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
             placeholder="Entre Ahumada y Estado"
           />
@@ -155,7 +147,7 @@ export default function ShippingForm({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => onFieldChange('tipoEnvio', 'VENTA')}
+                onClick={() => updateField('tipoEnvio', 'VENTA')}
                 className={`flex-1 py-2 px-3 rounded-lg font-semibold text-sm transition-all transform hover:scale-105 ${
                   formData.tipoEnvio === 'VENTA'
                     ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
@@ -166,7 +158,7 @@ export default function ShippingForm({
               </button>
               <button
                 type="button"
-                onClick={() => onFieldChange('tipoEnvio', 'CAMBIO')}
+                onClick={() => updateField('tipoEnvio', 'CAMBIO')}
                 className={`flex-1 py-2 px-3 rounded-lg font-semibold text-sm transition-all transform hover:scale-105 ${
                   formData.tipoEnvio === 'CAMBIO'
                     ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
@@ -239,7 +231,7 @@ export default function ShippingForm({
                 value={formData.montoACobrar ?? ''}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, '')
-                  onFieldChange('montoACobrar', value)
+                  updateField('montoACobrar', value)
                 }}
                 className={`w-full pl-8 pr-4 py-2.5 border rounded-lg focus:ring-2 transition-colors text-sm font-mono ${
                   formData.tipoEntrega === 'COBRAR' && !formData.montoACobrar
@@ -268,7 +260,7 @@ export default function ShippingForm({
             value={formData.observaciones ?? ''}
             onChange={(e) => {
               if (e.target.value.length <= 150) {
-                onFieldChange('observaciones', e.target.value)
+                updateField('observaciones', e.target.value)
               }
             }}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm resize-none"
