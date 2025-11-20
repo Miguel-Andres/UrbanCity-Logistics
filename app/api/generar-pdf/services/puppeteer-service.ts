@@ -16,18 +16,24 @@ class PuppeteerService {
       return this.browser
     }
 
-    // Configuración simple basada en La Cuentita
+    // Configuración optimizada para Vercel Serverless
     const browserOptions = {
       headless: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--disable-extensions',
+        '--disable-background-timer-throttling',
+        '--disable-renderer-backgrounding',
+        '--disable-backgrounding-occluded-windows',
+        '--no-first-run',
+        '--no-default-browser-check'
       ]
     }
 
-    console.log('Iniciando Puppeteer con configuración La Cuentita...')
+    console.log('Iniciando Puppeteer con configuración para Vercel...')
     this.browser = await puppeteer.launch(browserOptions)
     console.log('Puppeteer iniciado exitosamente')
     return this.browser
