@@ -9,9 +9,7 @@ const nextConfig: NextConfig = {
   },
   turbopack: {},
   // Configuración para Vercel
-  experimental: {
-    serverComponentsExternalPackages: ['puppeteer'],
-  },
+  serverExternalPackages: ['puppeteer'],
   // Configurar headers para CORS si es necesario
   async headers() {
     return [
