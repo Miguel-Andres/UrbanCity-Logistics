@@ -3,14 +3,14 @@
  */
 'use client'
 
-import { useState } from 'react'
-import { TabType } from '@/app/etiquetas/types'
 import Tabs from '@/app/etiquetas/components/shared/Tabs'
 import SingleLabelWizard from '@/app/etiquetas/components/wizard/SingleLabelWizard'
 import MultipleLabelWizard from '@/app/etiquetas/components/multiple/MultipleLabelWizard'
+import { useActiveTab, useUIStore } from '@/lib/stores/useUIStore'
 
 export default function EtiquetasPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('single')
+  const activeTab = useActiveTab()
+  const { setActiveTab } = useUIStore()
 
   return (
     <div className="min-h-screen bg-gray-50">
