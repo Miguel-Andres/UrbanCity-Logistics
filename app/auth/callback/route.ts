@@ -7,13 +7,7 @@ export async function GET(request: Request) {
     // if "next" is in param, use it as the redirect URL
     const next = searchParams.get('next') ?? '/dashboard'
 
-    // Debug: verificar variables de entorno
-    console.log('🔍 Debug Environment Variables en callback:')
-    console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-    console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    console.log('Origin:', origin)
-    console.log('Code:', code)
-
+    
     if (code) {
         const supabase = await createClient()
         const { error } = await supabase.auth.exchangeCodeForSession(code)
@@ -31,11 +25,7 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}${next}`)
             }
         } else {
-            // Log error for debugging
-            console.error('❌ Error exchanging code for session:', error)
-            console.error('Error details:', JSON.stringify(error, null, 2))
-            console.error('Code received:', code)
-            console.error('Origin:', origin)
+            console.error('Error exchanging code for session:', error)
         }
     }
 
