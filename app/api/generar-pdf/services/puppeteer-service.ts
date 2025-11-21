@@ -90,8 +90,8 @@ class PuppeteerService {
       await page.close()
       console.log('PDF generado exitosamente')
 
-      // Generar nombre de archivo
-      const nombreArchivo = `${data.nombre?.substring(0, 11).replace(/\s+/g, '') || 'envio'}.pdf`
+      // Generar nombre de archivo con nombre y tracking code
+      const nombreArchivo = `${data.nombre?.substring(0, 11).replace(/\s+/g, '') || 'envio'}-${(data as any).tracking_code || 'SINTRACK'}.pdf`
 
       return {
         success: true,
