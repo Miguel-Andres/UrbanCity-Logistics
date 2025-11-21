@@ -1,9 +1,11 @@
 /**
- * API Route para generar PDFs de etiquetas
+ * API Route para generar PDFs de etiquetas con tracking integrado
  */
 import { NextRequest } from 'next/server'
 import { puppeteerService } from './services/puppeteer-service'
 import { PDFData, GeneratedPDFResponse } from './types'
+import { createShipment } from '@/lib/tracking-helpers'
+import { createClient } from '@supabase/supabase-js'
 
 /**
  * Endpoint POST para generar PDFs
@@ -16,8 +18,22 @@ export async function POST(request: NextRequest) {
   try {
     console.log('API /api/generar-pdf - Iniciando procesamiento')
     
-    // Parsear los datos del request
-    const datos: PDFData = await request.json()
+    // Parsear los datos del request (frontend debe enviar user_id)
+    const datos: PDFData & { user_id: string } = await request.json()
+    
+    // Validar que venga user_id
+    if (!datos.user_id) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Se requiere user_id para generar etiquetas'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+    }
     console.log('Datos recibidos:', {
       nombre: datos.nombre,
       telefono: datos.telefono,
@@ -42,9 +58,48 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Crear shipment en la base de datos con tracking_code
+    console.log('Creando shipment en base de datos...')
+    let shipment
+    try {
+      shipment = await createShipment({
+        user_id: datos.user_id,  // Usar user_id del request
+        recipient_name: datos.nombre,
+        recipient_phone: datos.telefono,
+        recipient_address: datos.direccion || '',
+        recipient_city: datos.localidad,
+        recipient_reference: datos.entreCalles,
+        shipment_type: datos.tipoEnvio as 'VENTA' | 'CAMBIO',
+        payment_type: datos.tipoEntrega as 'COBRAR' | 'SOLO ENTREGAR',
+        amount_to_charge: datos.tipoEntrega === 'COBRAR' ? datos.montoACobrar || 0 : undefined,
+        ship_date: datos.fecha,
+        notes: datos.observaciones
+      })
+      console.log('Shipment creado exitosamente:', shipment.tracking_code)
+    } catch (error) {
+      console.error('Error creando shipment:', error)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Error creando envío en base de datos',
+          details: error instanceof Error ? error.message : 'Error desconocido'
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Agregar tracking_code a los datos para incluir en el PDF
+    const datosConTracking = {
+      ...datos,
+      tracking_code: shipment.tracking_code
+    }
+
     // Generar el PDF usando el servicio
     console.log('Invocando al servicio de generación de PDF...')
-    const resultado: GeneratedPDFResponse = await puppeteerService.generarPDF(datos)
+    const resultado: GeneratedPDFResponse = await puppeteerService.generarPDF(datosConTracking)
     
     if (!resultado.success || !resultado.pdf) {
       console.error('Fallo en la generación del PDF:', resultado.error)
@@ -65,14 +120,18 @@ export async function POST(request: NextRequest) {
     const duration = Date.now() - startTime
     console.log(`PDF generado exitosamente en ${duration}ms. Tamaño: ${resultado.pdf.length} bytes`)
 
-    // Devolver el PDF
+    // Devolver el PDF con headers adicionales incluyendo tracking_code
     return new Response(resultado.pdf as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${resultado.filename}"`,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Content-Length': resultado.pdf.length.toString()
+        'Content-Length': resultado.pdf.length.toString(),
+        // Headers adicionales con información del tracking
+        'X-Tracking-Code': shipment.tracking_code,
+        'X-Shipment-ID': shipment.id,
+        'X-Tracking-URL': `${request.nextUrl.origin}/tracking/${shipment.tracking_code}`
       }
     })
 

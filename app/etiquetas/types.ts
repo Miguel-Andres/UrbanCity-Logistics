@@ -26,6 +26,12 @@ export interface FormData {
   
   // Observaciones
   observaciones?: string
+  
+  // Tracking code (opcional, se agrega en el backend)
+  tracking_code?: string
+  
+  // Nombre de la tienda (opcional, se agrega en el frontend)
+  store_name?: string
 }
 
 // Tipo de datos para la vista previa (extiende FormData con extras de UI)

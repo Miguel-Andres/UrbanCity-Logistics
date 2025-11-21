@@ -4,8 +4,9 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Printer, Settings, Barcode } from 'lucide-react'
+import { FileText, Download, Printer, Settings, Barcode, Copy, ExternalLink, QrCode } from 'lucide-react'
 import { useFormData } from '@/lib/stores/useLabelStore'
+import { useAuthStore } from '@/lib/stores/useAuthStore'
 
 export default function LabelPreview({ 
   onPrevStep, 
@@ -19,9 +20,22 @@ export default function LabelPreview({
   nextStepDisabled?: boolean 
 }) {
   const formData = useFormData()
+  const { storeName, user } = useAuthStore()
   const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
+  const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
+
+  // Función para copiar al portapapeles
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      alert(`${type} copiado al portapapeles`)
+    } catch (err) {
+      console.error('Error al copiar:', err)
+      alert('Error al copiar')
+    }
+  }
 
   // Función de validación
   const validateFormData = (): boolean => {
@@ -70,8 +84,13 @@ export default function LabelPreview({
 
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado
-      const updatedFormData = { ...formData, tipoEtiqueta: selectedSize }
+      // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const updatedFormData = { 
+        ...formData, 
+        tipoEtiqueta: selectedSize,
+        store_name: storeName || 'Mi Tienda',
+        user_id: user?.id || ''
+      }
       
       const response = await fetch('/api/generar-pdf', {
         method: 'POST',
@@ -87,7 +106,23 @@ export default function LabelPreview({
         const a = document.createElement('a')
         a.style.display = 'none'
         a.href = url
-        a.download = `etiqueta-${selectedSize}-${Date.now()}.pdf`
+        
+        // Obtener nombre del archivo del header Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        let filename = `etiqueta-${selectedSize}-${Date.now()}.pdf`
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename="(.+)"/)
+          if (match) filename = match[1]
+        }
+        a.download = filename
+        
+        // Obtener info de tracking
+        const trackingCode = response.headers.get('X-Tracking-Code')
+        const trackingUrl = response.headers.get('X-Tracking-URL')
+        if (trackingCode && trackingUrl) {
+          setTrackingInfo({ code: trackingCode, url: trackingUrl })
+        }
+        
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
@@ -112,8 +147,13 @@ export default function LabelPreview({
 
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado
-      const updatedFormData = { ...formData, tipoEtiqueta: selectedSize }
+      // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const updatedFormData = { 
+        ...formData, 
+        tipoEtiqueta: selectedSize,
+        store_name: storeName || 'Mi Tienda',
+        user_id: user?.id || ''
+      }
       
       const response = await fetch('/api/generar-zpl', {
         method: 'POST',
@@ -130,14 +170,31 @@ export default function LabelPreview({
         const a = document.createElement('a')
         a.style.display = 'none'
         a.href = url
-        a.download = `etiqueta-${formData.tipoEnvio?.replace(/\s+/g, '') || 'SINTIPO'}-${formData.nombre?.substring(0, 12).replace(/\s+/g, '') || 'SINNOMBRE'}.txt`
+        
+        // Obtener nombre del archivo del header Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        let filename = `etiqueta-${formData.tipoEnvio?.replace(/\s+/g, '') || 'SINTIPO'}-${formData.nombre?.substring(0, 12).replace(/\s+/g, '') || 'SINNOMBRE'}.txt`
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename=\"(.+)\"/);
+          if (match) filename = match[1]
+        }
+        a.download = filename
+        
+        // Obtener info de tracking
+        const trackingCode = response.headers.get('X-Tracking-Code')
+        const trackingUrl = response.headers.get('X-Tracking-URL')
+        if (trackingCode && trackingUrl) {
+          setTrackingInfo({ code: trackingCode, url: trackingUrl })
+        }
+        
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
       } else {
-        console.error('Error generando ZPL')
-        alert('Error al generar el ZPL. Por favor, intente nuevamente.')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Error generando ZPL:', response.status, errorData)
+        alert(errorData.error || 'Error al generar el ZPL. Por favor, intente nuevamente.')
       }
     } catch (error) {
       console.error('Error:', error)
@@ -218,6 +275,49 @@ export default function LabelPreview({
               </div>
               <div className="ml-3">
                 <p className="text-sm text-red-800 font-medium">{validationError}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Info de Tracking */}
+        {trackingInfo && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center mb-2">
+              <QrCode className="w-5 h-5 text-green-600 mr-2" />
+              <h4 className="text-sm font-semibold text-green-800">Código de Tracking Generado</h4>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-green-200">
+                <span className="font-mono text-sm font-bold text-green-700">{trackingInfo.code}</span>
+                <button
+                  onClick={() => copyToClipboard(trackingInfo.code, 'Código de tracking')}
+                  className="p-1 hover:bg-green-100 rounded transition-colors"
+                  title="Copiar código"
+                >
+                  <Copy className="w-4 h-4 text-green-600" />
+                </button>
+              </div>
+              <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-green-200">
+                <span className="text-xs text-green-600 truncate">{trackingInfo.url}</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => copyToClipboard(trackingInfo.url, 'Link de tracking')}
+                    className="p-1 hover:bg-green-100 rounded transition-colors"
+                    title="Copiar link"
+                  >
+                    <Copy className="w-4 h-4 text-green-600" />
+                  </button>
+                  <a
+                    href={trackingInfo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 hover:bg-green-100 rounded transition-colors"
+                    title="Abrir tracking"
+                  >
+                    <ExternalLink className="w-4 h-4 text-green-600" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
