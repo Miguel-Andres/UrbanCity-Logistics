@@ -9,6 +9,7 @@ import { TrackingHeader } from '@/components/tracking/tracking-header'
 import { ShipmentInfo } from '@/components/tracking/shipment-info'
 import { TrackingTimeline } from '@/components/tracking/tracking-timeline'
 import { TrackingNotFound } from '@/components/tracking/tracking-not-found'
+import { TrackingFooter } from '@/components/tracking/tracking-footer'
 
 interface PageProps {
   params: Promise<{
@@ -130,22 +131,24 @@ export default async function TrackingPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <TrackingHeader trackingCode={shipment.tracking_code} />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-5xl mx-auto px-4 py-8 flex-grow">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Información principal del envío */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             <ShipmentInfo shipment={shipment} />
           </div>
           
           {/* Timeline de eventos */}
-          <div className="lg:col-span-1">
+          <div>
             <TrackingTimeline events={events} />
           </div>
         </div>
       </div>
+      
+      <TrackingFooter trackingCode={shipment.tracking_code} />
     </div>
   )
 }
