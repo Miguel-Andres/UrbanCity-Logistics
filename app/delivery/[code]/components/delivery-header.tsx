@@ -54,29 +54,28 @@ export function DeliveryHeader({ shipment }: DeliveryHeaderProps) {
   const StatusIcon = statusIcons[shipment.status]
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white shadow-sm">
+      <div className="px-4 py-3">
+        {/* Botón de volver */}
         <button
           onClick={() => router.back()}
-          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-3"
         >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Volver
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          <span className="text-sm">Volver</span>
         </button>
-        <h1 className="text-xl font-bold text-gray-900">Actualizar Estado de Envío</h1>
-        <div></div>
-      </div>
-      
-      <div className="flex items-center justify-center mb-6">
-        <div className={`p-4 rounded-lg ${currentStatus.bgColor} ${currentStatus.borderColor} border`}>
-          <StatusIcon className={`w-8 h-8 ${currentStatus.color} mx-auto mb-2`} />
-          <span className={`font-semibold ${currentStatus.color}`}>{currentStatus.label}</span>
+        
+        {/* Contenido centrado */}
+        <div className="flex items-center justify-center gap-4">
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${currentStatus.bgColor} ${currentStatus.borderColor} border`}>
+            <StatusIcon className={`w-4 h-4 ${currentStatus.color}`} />
+            <span className={`text-xs font-medium ${currentStatus.color}`}>{currentStatus.label}</span>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Tracking</p>
+            <p className="text-sm font-mono font-bold text-gray-900">{shipment.tracking_code}</p>
+          </div>
         </div>
-      </div>
-
-      <div className="text-center">
-        <p className="text-sm text-gray-500 mb-2">Código de Seguimiento</p>
-        <p className="text-xl font-mono font-bold text-gray-900">{shipment.tracking_code}</p>
       </div>
     </div>
   )

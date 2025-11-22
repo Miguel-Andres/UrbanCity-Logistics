@@ -1,21 +1,24 @@
 export interface Shipment {
   id: string
   tracking_code: string
+  user_id: string
   recipient_name: string
   recipient_phone: string
   recipient_address: string
   recipient_city: string
   recipient_reference?: string
-  shipment_type: string
-  payment_type: string
+  shipment_type: 'VENTA' | 'CAMBIO'
+  payment_type: 'COBRAR' | 'SOLO ENTREGAR'
   amount_to_charge?: number
+  ship_date?: string
+  notes?: string
   status: 'pending' | 'in_transit' | 'delivered' | 'failed'
   created_at: string
+  updated_at?: string
   delivered_at?: string
   delivered_by?: string
   received_by?: string
   delivery_notes?: string
-  updated_at?: string
 }
 
 export interface UpdateForm {

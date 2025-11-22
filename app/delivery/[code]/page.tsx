@@ -8,6 +8,7 @@ import { cookies } from 'next/headers'
 import { AlertCircle, Home } from 'lucide-react'
 import { DeliveryHeader } from './components/delivery-header'
 import { ShipmentInfoCard } from './components/shipment-info-card'
+import { DeliveryStepper } from './components/delivery-stepper'
 import { DeliveryUpdateForm } from './components/delivery-update-form'
 import type { Shipment } from './types'
 
@@ -37,20 +38,25 @@ async function getShipment(code: string): Promise<Shipment> {
     }
   )
 
-  const { data, error } = await supabase
+  console.log('🔍 [getShipment] Obteniendo shipment por tracking_code')
+  
+  // Obtener shipment
+  const { data: shipment, error } = await supabase
     .from('shipments')
     .select('*')
     .eq('tracking_code', code.toUpperCase())
     .single()
 
-  console.log('🔍 [DeliveryPage] Response:', { data, error })
+  console.log('✅ [getShipment] Query completada')
 
-  if (error || !data) {
-    console.log('❌ [DeliveryPage] Shipment no encontrado')
+  if (error || !shipment) {
+    console.log('❌ [getShipment] Shipment no encontrado - error:', error)
     notFound()
   }
 
-  return data as Shipment
+  console.log('🚀 [getShipment] Retornando shipment:', shipment.tracking_code)
+
+  return shipment as Shipment
 }
 
 export default async function DeliveryPage({ params }: PageProps) {
@@ -62,11 +68,27 @@ export default async function DeliveryPage({ params }: PageProps) {
     console.log('✅ [DeliveryPage] Shipment encontrado:', shipment.tracking_code)
 
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-gray-50 pb-20">
+        {/* Header Sticky para Mobile */}
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
           <DeliveryHeader shipment={shipment} />
+        </div>
+
+        {/* Contenido Principal */}
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* Info del Destinatario */}
           <ShipmentInfoCard shipment={shipment} />
-          <DeliveryUpdateForm shipment={shipment} />
+          
+          {/* Stepper de Estados */}
+          <DeliveryStepper 
+            shipment={shipment}
+            disabled={shipment.status === 'delivered'}
+          />
+          
+          {/* Formulario de Actualización - Solo mostrar si no está entregado */}
+          {shipment.status !== 'delivered' && (
+            <DeliveryUpdateForm shipment={shipment} />
+          )}
         </div>
       </div>
     )

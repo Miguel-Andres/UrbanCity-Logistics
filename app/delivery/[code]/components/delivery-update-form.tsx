@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { CheckCircle } from 'lucide-react'
 import type { Shipment } from '../types'
 
 interface DeliveryUpdateFormProps {
@@ -9,6 +10,11 @@ interface DeliveryUpdateFormProps {
 
 export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
   const router = useRouter()
+  
+  // Solo mostrar formulario si está en tránsito para completar entrega
+  if (shipment.status !== 'in_transit') {
+    return null
+  }
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,24 +96,21 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Actualizar Estado</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Completar Entrega</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Nuevo Estado
+            Estado de Entrega
           </label>
           <select
             name="status"
-            defaultValue={shipment.status}
+            defaultValue="delivered"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             required
           >
-            <option value="">Seleccionar estado</option>
-            <option value="pending">Pendiente</option>
-            <option value="in_transit">En Tránsito</option>
             <option value="delivered">Entregado</option>
-            <option value="failed">Fallido</option>
+            <option value="failed">No se pudo entregar</option>
           </select>
         </div>
 
@@ -152,9 +155,10 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
 
         <button
           type="submit"
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
-          Actualizar Estado
+          <CheckCircle className="w-5 h-5" />
+          Confirmar Entrega
         </button>
       </form>
     </div>
