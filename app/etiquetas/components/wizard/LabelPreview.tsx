@@ -4,8 +4,8 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Printer, Settings, Barcode, Copy, ExternalLink, QrCode } from 'lucide-react'
-import { useFormData } from '@/lib/stores/useLabelStore'
+import { FileText, Download, Printer, Settings, Barcode, Copy, ExternalLink, QrCode, PlusCircle } from 'lucide-react'
+import { useFormData, useLabelStore } from '@/lib/stores/useLabelStore'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 
 export default function LabelPreview({ 
@@ -21,10 +21,12 @@ export default function LabelPreview({
 }) {
   const formData = useFormData()
   const { storeName, user } = useAuthStore()
+  const { resetForm } = useLabelStore()
   const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
   const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
+  const [showNewShipmentButton, setShowNewShipmentButton] = useState(false)
 
   // Función para copiar al portapapeles
   const copyToClipboard = async (text: string, type: string) => {
@@ -35,6 +37,15 @@ export default function LabelPreview({
       console.error('Error al copiar:', err)
       alert('Error al copiar')
     }
+  }
+
+  // Función para nuevo envío
+  const handleNewShipment = () => {
+    resetForm()
+    setTrackingInfo(null)
+    setValidationError('')
+    setShowNewShipmentButton(false)
+    setSelectedSize('10x15')
   }
 
   // Función de validación
@@ -127,6 +138,9 @@ export default function LabelPreview({
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
+        
+        // Mostrar botón de nuevo envío
+        setShowNewShipmentButton(true)
       } else {
         console.error('Error generando PDF')
         alert('Error al generar el PDF. Por favor, intente nuevamente.')
@@ -191,6 +205,9 @@ export default function LabelPreview({
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
+        
+        // Mostrar botón de nuevo envío
+        setShowNewShipmentButton(true)
       } else {
         const errorData = await response.json().catch(() => ({}))
         console.error('Error generando ZPL:', response.status, errorData)
@@ -247,7 +264,7 @@ export default function LabelPreview({
         <div className="grid grid-cols-2 gap-3 mb-6">
           <button
             onClick={handleGeneratePDF}
-            disabled={isGenerating}
+            disabled={isGenerating || showNewShipmentButton}
             className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm"
           >
             <Download className="w-4 h-4" />
@@ -256,11 +273,11 @@ export default function LabelPreview({
 
           <button
             onClick={handleGenerateZPL}
-            disabled={isGenerating}
+            disabled={isGenerating || showNewShipmentButton}
             className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm"
           >
             <Barcode className="w-4 h-4" />
-            <span>Generar ZPL</span>
+            <span>{isGenerating ? 'Generando...' : 'Generar ZPL'}</span>
           </button>
         </div>
 
@@ -321,6 +338,17 @@ export default function LabelPreview({
               </div>
             </div>
           </div>
+        )}
+
+        {/* Botón Nueva Etiqueta */}
+        {showNewShipmentButton && (
+          <button
+            onClick={handleNewShipment}
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+          >
+            <PlusCircle className="w-5 h-5" />
+            <span>NUEVA ETIQUETA</span>
+          </button>
         )}
 
         {/* Navigation buttons */}
