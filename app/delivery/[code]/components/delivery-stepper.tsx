@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { CheckCircle, Clock, Truck } from 'lucide-react'
+import Swal from 'sweetalert2'
 import type { Shipment } from '../types'
 
 interface DeliveryStepperProps {
@@ -26,6 +27,7 @@ const steps = [
 
 export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperProps) {
   const [currentStatus, setCurrentStatus] = useState<'pending' | 'in_transit' | 'delivered' | 'failed'>(shipment.status)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const getCurrentStepIndex = () => {
     const stepIndex = steps.findIndex(step => step.key === currentStatus)
@@ -37,7 +39,36 @@ export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperP
   const canAdvance = currentStatus === 'pending' && !disabled
 
   const handleNextStep = async () => {
-    if (canAdvance) {
+    if (canAdvance && !isSubmitting) {
+      // Confirmación antes de iniciar tránsito
+      const confirmResult = await Swal.fire({
+        title: '¿Iniciar Tránsito?',
+        text: 'El envío pasará a estado "En Tránsito" y podrás completar la entrega',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, iniciar tránsito',
+        cancelButtonText: 'Cancelar'
+      })
+
+      if (!confirmResult.isConfirmed) {
+        return
+      }
+
+      setIsSubmitting(true)
+
+      // Mostrar loading
+      Swal.fire({
+        title: 'Iniciando tránsito...',
+        html: 'Por favor, espera un momento',
+        didOpen: () => {
+          Swal.showLoading()
+        },
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      })
+
       try {
         const response = await fetch(`/api/delivery/${shipment.tracking_code}`, {
           method: 'POST',
@@ -49,21 +80,42 @@ export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperP
           }),
         })
 
-        if (!response.ok) {
-          throw new Error('Error al actualizar estado')
+        const result = await response.json()
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Error al actualizar estado')
         }
 
+        // Cerrar loading
+        Swal.close()
+
+        // Mostrar éxito
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Tránsito iniciado!',
+          text: 'El envío ahora está en camino',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+
+        // Actualizar estado local
         setCurrentStatus('in_transit')
         
-        // Mostrar mensaje de éxito
-        alert('Estado actualizado a: En Tránsito')
+        // Recargar para mostrar formulario de entrega sin timeout artificial
+        window.location.reload()
         
-        // Recargar para mostrar formulario de entrega
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
       } catch (error) {
-        alert('Error al actualizar el estado')
+        Swal.close()
+        
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error instanceof Error ? error.message : 'No se pudo actualizar el estado',
+          confirmButtonColor: '#ef4444'
+        })
+      } finally {
+        setIsSubmitting(false)
       }
     }
   }
@@ -117,10 +169,23 @@ export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperP
       {canAdvance && (
         <button
           onClick={handleNextStep}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+          disabled={isSubmitting}
+          className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed"
         >
-          <Truck className="w-5 h-5" />
-          Iniciar Tránsito
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Iniciando...
+            </>
+          ) : (
+            <>
+              <Truck className="w-5 h-5" />
+              Iniciar Tránsito
+            </>
+          )}
         </button>
       )}
 
