@@ -25,7 +25,7 @@ export interface UpdateForm {
   status: string
   delivered_by: string
   received_by: string
-  delivery_notes: string
+  notes: string
 }
 
 export const statusConfig = {

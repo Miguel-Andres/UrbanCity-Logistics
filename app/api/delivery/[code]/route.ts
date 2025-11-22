@@ -8,7 +8,7 @@ export async function POST(
   try {
     const { code } = await params
     const body = await request.json()
-    const { status, delivered_by, received_by, delivery_notes } = body
+    const { status, delivered_by, received_by, notes } = body
 
     console.log('🔄 [API] Actualizando shipment:', code)
 
@@ -50,7 +50,7 @@ export async function POST(
       updateData.delivered_at = new Date().toISOString()
       updateData.delivered_by = delivered_by || null
       updateData.received_by = received_by || null
-      updateData.delivery_notes = delivery_notes || null
+      updateData.delivery_notes = notes || null
     }
 
     const { error: updateError } = await supabase
@@ -72,7 +72,7 @@ export async function POST(
       .insert({
         shipment_id: shipment.id,
         status,
-        notes: delivery_notes || null,
+        notes: notes || null,
         delivered_by: delivered_by || null,
         received_by: received_by || null
       })

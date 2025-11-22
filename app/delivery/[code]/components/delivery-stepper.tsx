@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, Clock, Truck } from 'lucide-react'
+import { CheckCircle, Clock, Truck, AlertCircle, RotateCcw } from 'lucide-react'
 import Swal from 'sweetalert2'
 import type { Shipment } from '../types'
 
@@ -10,7 +10,7 @@ interface DeliveryStepperProps {
   disabled?: boolean
 }
 
-const steps = [
+const normalSteps = [
   {
     key: 'pending',
     label: 'Pendiente',
@@ -22,12 +22,42 @@ const steps = [
     label: 'En Tránsito',
     icon: Truck,
     description: 'Envío en camino'
+  },
+  {
+    key: 'delivered',
+    label: 'Entregado',
+    icon: CheckCircle,
+    description: 'Envío entregado exitosamente'
+  }
+]
+
+const failedSteps = [
+  {
+    key: 'pending',
+    label: 'Pendiente',
+    icon: Clock,
+    description: 'Envío pendiente de retiro'
+  },
+  {
+    key: 'in_transit',
+    label: 'En Tránsito',
+    icon: Truck,
+    description: 'Envío en camino'
+  },
+  {
+    key: 'failed',
+    label: 'Fallido',
+    icon: AlertCircle,
+    description: 'No se pudo entregar'
   }
 ]
 
 export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperProps) {
   const [currentStatus, setCurrentStatus] = useState<'pending' | 'in_transit' | 'delivered' | 'failed'>(shipment.status)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Elegir los steps según el estado actual
+  const steps = currentStatus === 'failed' ? failedSteps : normalSteps
   
   const getCurrentStepIndex = () => {
     const stepIndex = steps.findIndex(step => step.key === currentStatus)
@@ -76,7 +106,10 @@ export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperP
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            status: 'in_transit'
+            status: 'in_transit',
+            notes: 'Su paquete está en camino. En las próximas horas estará siendo entregado en la dirección de destino.',
+            delivered_by: null,
+            received_by: null
           }),
         })
 
@@ -117,6 +150,88 @@ export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperP
       } finally {
         setIsSubmitting(false)
       }
+    }
+  }
+
+  const handleRetry = async () => {
+    if (isSubmitting) return
+
+    // Confirmación para reintentar
+    const confirmResult = await Swal.fire({
+      title: '¿Reintentar Entrega?',
+      text: 'El paquete pasará a estado "En Tránsito" para intentar la entrega nuevamente',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, reintentar',
+      cancelButtonText: 'Cancelar'
+    })
+
+    if (!confirmResult.isConfirmed) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    // Mostrar loading
+    Swal.fire({
+      title: 'Reintentando entrega...',
+      html: 'Por favor, espera un momento',
+      didOpen: () => {
+        Swal.showLoading()
+      },
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    })
+
+    try {
+      const response = await fetch(`/api/delivery/${shipment.tracking_code}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'in_transit',
+          notes: 'Reintento de entrega',
+          delivered_by: null,
+          received_by: null
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Error al reintentar entrega')
+      }
+
+      // Cerrar loading
+      Swal.close()
+
+      // Mostrar éxito
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Entrega reiniciada!',
+        text: 'El paquete está en camino para ser entregado nuevamente',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true
+      })
+
+      // Recargar para mostrar formulario de entrega
+      window.location.reload()
+      
+    } catch (error) {
+      Swal.close()
+      
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error instanceof Error ? error.message : 'No se pudo reintentar la entrega',
+        confirmButtonColor: '#ef4444'
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -184,6 +299,30 @@ export function DeliveryStepper({ shipment, disabled = false }: DeliveryStepperP
             <>
               <Truck className="w-5 h-5" />
               Iniciar Tránsito
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Botón para reintentar entrega fallida */}
+      {currentStatus === 'failed' && !disabled && (
+        <button
+          onClick={handleRetry}
+          disabled={isSubmitting}
+          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Reintentando...
+            </>
+          ) : (
+            <>
+              <RotateCcw className="w-5 h-5" />
+              REINTENTAR ENTREGA
             </>
           )}
         </button>

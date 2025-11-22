@@ -125,12 +125,13 @@ export function TrackingTimeline({ events }: TrackingTimelineProps) {
                       
                       {/* Información adicional del evento */}
                       <div className="mt-2 space-y-1">
-                        {event.delivered_by && (
+                        {/* Mostrar información del repartidor según el estado */}
+                        {event.status === 'delivered' && event.delivered_by && (
                           <p className="text-sm text-gray-600">
                             Entregado por: <span className="font-medium">{event.delivered_by}</span>
                           </p>
                         )}
-                        {event.received_by && (
+                        {(event.status === 'delivered') && event.received_by && (
                           <p className="text-sm text-gray-600">
                             Recibido por: <span className="font-medium">{event.received_by}</span>
                           </p>

@@ -15,7 +15,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deliveredBy, setDeliveredBy] = useState('')
   const [receivedBy, setReceivedBy] = useState('')
-  const [deliveryNotes, setDeliveryNotes] = useState('')
+  const [notes, setNotes] = useState('')
   const [failureReason, setFailureReason] = useState('')
   const [failureNotes, setFailureNotes] = useState('')
   
@@ -83,7 +83,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
         <div style="text-align: left;">
           <p><strong>Entregado por:</strong> ${deliveredBy}</p>
           <p><strong>Entregado a:</strong> ${receivedBy}</p>
-          ${deliveryNotes ? `<p><strong>Notas:</strong> ${deliveryNotes}</p>` : ''}
+          ${notes ? `<p><strong>Notas:</strong> ${notes}</p>` : ''}
           ${shipment.payment_type === 'COBRAR' && shipment.amount_to_charge ? 
             `<p><strong>Monto a cobrar:</strong> $${shipment.amount_to_charge.toLocaleString('es-AR', {minimumFractionDigits: 2})}</p>` 
             : ''}
@@ -101,7 +101,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
       return
     }
 
-    await updateStatus('delivered', receivedBy, deliveryNotes, '', '')
+    await updateStatus('delivered', notes, deliveredBy, receivedBy)
   }
 
   const handleFailed = async () => {
@@ -115,28 +115,34 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
       return
     }
 
-    // Confirmación de fallo
+    // Formatear las notas para failed
     const reasonText = {
-      'no_one_home': 'No hay nadie en el domicilio',
-      'wrong_address': 'Dirección incorrecta',
-      'recipient_refused': 'El destinatario se negó a recibir',
-      'damaged_package': 'Paquete dañado',
-      'other': 'Otro motivo'
+      'no_one_home': 'Motivo: No hay nadie en el domicilio',
+      'wrong_address': 'Motivo: Dirección incorrecta',
+      'recipient_refused': 'Motivo: El destinatario se negó a recibir',
+      'damaged_package': 'Motivo: Paquete dañado',
+      'other': 'Motivo: Otro'
     }
 
+    const trimmedFailureNotes = failureNotes.trim() || 'Sin detalles adicionales'
+    
+    // Formatear la nota final para guardar
+    const formattedNotes = `${reasonText[failureReason as keyof typeof reasonText]}\nDetalles: ${trimmedFailureNotes}`
+
+    // Confirmación de fallo
     const confirmResult = await Swal.fire({
       title: '¿Marcar como no entregado?',
       html: `
         <div style="text-align: left;">
           <p><strong>Motivo:</strong> ${reasonText[failureReason as keyof typeof reasonText]}</p>
-          ${failureNotes ? `<p><strong>Notas:</strong> ${failureNotes}</p>` : ''}
+          ${trimmedFailureNotes && trimmedFailureNotes !== 'Sin detalles adicionales' ? `<p><strong>Detalles:</strong> ${trimmedFailureNotes}</p>` : ''}
         </div>
       `,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, registrar fallo',
+      confirmButtonText: 'No se pudo entregar',
       cancelButtonText: 'Cancelar'
     })
 
@@ -144,15 +150,14 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
       return
     }
 
-    await updateStatus('failed', '', '', failureReason, failureNotes)
+    await updateStatus('failed', formattedNotes, 'Repartidor')
   }
 
   const updateStatus = async (
     status: string, 
-    receivedBy: string, 
-    deliveryNotes: string, 
-    failureReason: string, 
-    failureNotes: string
+    notes: string,
+    deliveredBy?: string,
+    receivedBy?: string
   ) => {
     if (isSubmitting) return
 
@@ -177,11 +182,9 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
         },
         body: JSON.stringify({
           status,
-          delivered_by: status === 'delivered' ? deliveredBy : 'Repartidor',
-          received_by: status === 'delivered' ? receivedBy : '',
-          delivery_notes: deliveryNotes,
-          failure_reason: failureReason,
-          failure_notes: failureNotes
+          delivered_by: deliveredBy || 'Repartidor',
+          received_by: receivedBy || '',
+          notes: notes
         }),
       })
 
@@ -260,7 +263,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
                 type="text"
                 value={deliveredBy}
                 onChange={(e) => setDeliveredBy(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400 text-gray-900"
                 placeholder="Ingresa tu nombre completo"
                 disabled={isSubmitting}
               />
@@ -274,7 +277,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
                 type="text"
                 value={receivedBy}
                 onChange={(e) => setReceivedBy(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400 text-gray-900"
                 placeholder="Nombre de la persona que recibió"
                 disabled={isSubmitting}
               />
@@ -285,9 +288,9 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
                 Notas (opcional)
               </label>
               <textarea
-                value={deliveryNotes}
-                onChange={(e) => setDeliveryNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400 text-gray-900 resize-none"
                 rows={2}
                 placeholder="Notas adicionales de la entrega"
                 disabled={isSubmitting}
@@ -344,11 +347,11 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
               <select
                 value={failureReason}
                 onChange={(e) => setFailureReason(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
                 required
                 disabled={isSubmitting}
               >
-                <option value="">Seleccionar motivo</option>
+                <option value="" className="text-gray-400">Seleccionar motivo</option>
                 <option value="no_one_home">🏠 No hay nadie en el domicilio</option>
                 <option value="wrong_address">📍 Dirección incorrecta</option>
                 <option value="recipient_refused">🙅 El destinatario se negó a recibir</option>
@@ -364,7 +367,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
               <textarea
                 value={failureNotes}
                 onChange={(e) => setFailureNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 placeholder-gray-400 text-gray-900 resize-none"
                 rows={2}
                 placeholder="Describe qué sucedió al intentar la entrega"
                 disabled={isSubmitting}
@@ -388,7 +391,7 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
             ) : (
               <>
                 <XCircle className="w-6 h-6" />
-                REGISTRAR FALLO
+                NO SE PUDO ENTREGAR
               </>
             )}
           </button>
