@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Rutas públicas (no requieren autenticación)
@@ -76,13 +76,13 @@ export async function middleware(request: NextRequest) {
 
     // Si hay error, permitir acceso (puede ser un error temporal)
     if (error) {
-      console.error('Middleware auth error:', error)
+      console.error('Proxy auth error:', error)
       return NextResponse.next()
     }
 
     return response
   } catch (error) {
-    console.error('Middleware error:', error)
+    console.error('Proxy error:', error)
     // En caso de error, permitir acceso para no romper la app
     return NextResponse.next()
   }

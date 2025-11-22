@@ -17,7 +17,7 @@ export function UpdateStatusForm({ shipment, onUpdateSuccess }: UpdateStatusForm
     status: shipment.status,
     delivered_by: shipment.delivered_by || '',
     received_by: shipment.received_by || '',
-    delivery_notes: shipment.delivery_notes || ''
+    notes: shipment.delivery_notes || ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,8 +143,8 @@ export function UpdateStatusForm({ shipment, onUpdateSuccess }: UpdateStatusForm
                 Notas de entrega (opcional)
               </label>
               <textarea
-                value={formData.delivery_notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, delivery_notes: e.target.value }))}
+                value={formData.notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 rows={3}
                 placeholder="Notas adicionales sobre la entrega"
