@@ -11,12 +11,43 @@ interface DeliveryUpdateFormProps {
 export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
   const router = useRouter()
   
+  // Si ya está entregado, mostrar mensaje
+  if (shipment.status === 'delivered') {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+        <svg
+          className="w-16 h-16 text-green-600 mx-auto mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <h3 className="text-lg font-semibold text-green-800 mb-2">Envío Entregado</h3>
+        <p className="text-green-700 mb-4">
+          Este envío ya ha sido entregado. No se pueden realizar más actualizaciones.
+        </p>
+        <button
+          onClick={() => router.push(`/tracking/${shipment.tracking_code}`)}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+        >
+          Ver Detalles
+        </button>
+      </div>
+    )
+  }
+
   // Solo mostrar formulario si está en tránsito para completar entrega
   if (shipment.status !== 'in_transit') {
     return null
   }
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
     const formData = new FormData(e.currentTarget)
@@ -62,36 +93,6 @@ export function DeliveryUpdateForm({ shipment }: DeliveryUpdateFormProps) {
       console.error('Error:', error)
       alert(error instanceof Error ? error.message : 'Error al actualizar el estado')
     }
-  }
-
-  if (shipment.status === 'delivered') {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <svg
-          className="w-16 h-16 text-green-600 mx-auto mb-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <h3 className="text-lg font-semibold text-green-800 mb-2">Envío Entregado</h3>
-        <p className="text-green-700 mb-4">
-          Este envío ya ha sido entregado. No se pueden realizar más actualizaciones.
-        </p>
-        <button
-          onClick={() => router.push(`/tracking/${shipment.tracking_code}`)}
-          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-        >
-          Ver Detalles
-        </button>
-      </div>
-    )
   }
 
   return (

@@ -4,7 +4,6 @@
  */
 import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { AlertCircle, Home } from 'lucide-react'
 import { DeliveryHeader } from './components/delivery-header'
 import { ShipmentInfoCard } from './components/shipment-info-card'
@@ -23,19 +22,7 @@ async function getShipment(code: string): Promise<Shipment> {
   
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookies().getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => 
-            cookies().set(name, value)
-          )
-        },
-      },
-    }
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
   console.log('🔍 [getShipment] Obteniendo shipment por tracking_code')
