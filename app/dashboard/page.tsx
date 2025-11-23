@@ -187,8 +187,8 @@ export default async function DashboardPage() {
                         <UserProfileCard
                             userName={user.user_metadata?.full_name}
                             email={user.email || ''}
-                            phone={profile?.phone}
-                            storeName={profile?.store_name}
+                            phone={profile?.phone || undefined}
+                            storeName={profile?.store_name || undefined}
                         />
                     </div>
                 </div>
