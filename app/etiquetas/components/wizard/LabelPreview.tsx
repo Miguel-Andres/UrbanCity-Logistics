@@ -304,37 +304,44 @@ export default function LabelPreview({
               <QrCode className="w-5 h-5 text-green-600 mr-2" />
               <h4 className="text-sm font-semibold text-green-800">Código de Tracking Generado</h4>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-green-200">
-                <span className="font-mono text-sm font-bold text-green-700">{trackingInfo.code}</span>
-                <button
-                  onClick={() => copyToClipboard(trackingInfo.code, 'Código de tracking')}
-                  className="p-1 hover:bg-green-100 rounded transition-colors"
-                  title="Copiar código"
-                >
-                  <Copy className="w-4 h-4 text-green-600" />
-                </button>
-              </div>
-              <div className="flex items-center justify-between bg-white px-3 py-2 rounded border border-green-200">
-                <span className="text-xs text-green-600 truncate">{trackingInfo.url}</span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => copyToClipboard(trackingInfo.url, 'Link de tracking')}
-                    className="p-1 hover:bg-green-100 rounded transition-colors"
-                    title="Copiar link"
-                  >
-                    <Copy className="w-4 h-4 text-green-600" />
-                  </button>
-                  <a
-                    href={trackingInfo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1 hover:bg-green-100 rounded transition-colors"
-                    title="Abrir tracking"
-                  >
-                    <ExternalLink className="w-4 h-4 text-green-600" />
-                  </a>
+            <div className="space-y-3">
+              {/* Código grande */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-3 rounded-lg">
+                <div className="text-center">
+                  <p className="text-xs text-blue-600 mb-1 font-medium">Código de Seguimiento</p>
+                  <p className="font-mono text-lg font-bold text-blue-900">{trackingInfo.code}</p>
                 </div>
+              </div>
+              
+              {/* Link visible */}
+              <div className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg">
+                <p className="text-xs text-gray-600 mb-1 font-medium text-center">Link de Seguimiento</p>
+                <p className="text-xs text-gray-700 break-all font-mono bg-gray-100 px-2 py-1 rounded text-center">{trackingInfo.url}</p>
+              </div>
+              
+              {/* Texto de ayuda */}
+              <p className="text-xs text-gray-500 text-center italic">
+                💡 Copia este link y daselo a tu cliente para mantenerlo informado sobre el estado de su envío
+              </p>
+              
+              {/* Botones de acción */}
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={() => copyToClipboard(trackingInfo.url, 'Link de tracking')}
+                  className="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 font-medium py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs"
+                >
+                  <Copy className="w-3.5 h-3.5 text-gray-600" />
+                  <span>COPIAR LINK</span>
+                </button>
+                <a
+                  href={trackingInfo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 text-xs shadow-sm hover:shadow-md"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>VER SEGUIMIENTO</span>
+                </a>
               </div>
             </div>
           </div>
