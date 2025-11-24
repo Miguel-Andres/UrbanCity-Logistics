@@ -162,13 +162,14 @@ export default function LabelPreview({
     setIsGenerating(true)
     try {
       // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const { user } = useAuthStore.getState()
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
         store_name: storeName || 'Mi Tienda',
         user_id: user?.id || ''
       }
-      
+
       const response = await fetch('/api/generar-zpl', {
         method: 'POST',
         headers: {
