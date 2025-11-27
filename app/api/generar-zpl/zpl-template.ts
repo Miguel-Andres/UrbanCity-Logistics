@@ -90,8 +90,8 @@ export function generarZPLEstandar(datos: FormData): string {
     : process.env.NEXT_PUBLIC_SITE_URL
   const qrUrl = `${baseUrl}/delivery/${codigoSeguimiento}`
   
-  zpl += `\n^FO250,740^BQN,2,8^FD${qrUrl}^FS
-^FO250,1100^CF0,30^FD${codigoSeguimiento}^FS
+  zpl += `\n^FO250,740^BQN,2,8^FDMA,${qrUrl}^FS
+^FO300,1100^CF0,30^FD${codigoSeguimiento}^FS
 ^XZ`
   
   return zpl
