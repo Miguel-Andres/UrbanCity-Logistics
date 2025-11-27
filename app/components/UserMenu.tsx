@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
+import { useAuthStore } from '@/lib/stores/useAuthStore'
 
 interface UserMenuProps {
     user: User
@@ -11,11 +12,32 @@ interface UserMenuProps {
 export function UserMenu({ user }: UserMenuProps) {
     const router = useRouter()
     const supabase = createClient()
+    const { logout } = useAuthStore()
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut()
-        router.push('/')
-        router.refresh()
+        console.log('Iniciando logout...')
+        try {
+            // Primero limpiar el store de Zustand
+            logout()
+            
+            // Luego hacer logout en Supabase
+            const { error } = await supabase.auth.signOut()
+            
+            if (error) {
+                console.error('Error en logout de Supabase:', error)
+            } else {
+                console.log('Logout exitoso')
+            }
+            
+            // Redirigir y refresh
+            router.push('/access')
+            router.refresh()
+        } catch (error) {
+            console.error('Error en logout:', error)
+            // Aun así redirigir
+            router.push('/access')
+            router.refresh()
+        }
     }
 
     return (

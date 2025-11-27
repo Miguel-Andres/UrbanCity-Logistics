@@ -72,23 +72,47 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Escuchar cambios en la autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email)
+        console.log('Auth state changed:', event, session?.user?.email, session?.user?.id)
         
         if (event === 'SIGNED_IN' && session?.user) {
           // Usuario se acaba de loguear
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('store_name')
-            .eq('id', session.user.id)
-            .single()
-          
-          setAuth(session.user, profile?.store_name)
+          console.log('Usuario logueado, actualizando store...')
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('store_name')
+              .eq('id', session.user.id)
+              .single()
+            
+            console.log('Profile obtenido:', profile)
+            setAuth(session.user, profile?.store_name)
+          } catch (error) {
+            console.error('Error obteniendo profile:', error)
+            setAuth(session.user, null)
+          }
         } else if (event === 'SIGNED_OUT') {
           // Usuario se deslogueó
+          console.log('Usuario deslogueado, limpiando store...')
           setUser(null)
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          // Token se refrescó
-          // Actualizar estado si es necesario
+          // Token se refrescó - actualizar el usuario en el store
+          console.log('Token refrescado, actualizando usuario...')
+          setUser(session.user)
+          
+          // También obtener store_name por si cambió
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('store_name')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (profile?.store_name) {
+              setStoreName(profile.store_name)
+            }
+          } catch (error) {
+            console.error('Error obteniendo profile en refresh:', error)
+          }
         }
       }
     )
