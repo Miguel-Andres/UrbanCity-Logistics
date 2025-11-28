@@ -73,12 +73,11 @@ export default function Header() {
       icon: "🏪"
     },
     { 
-      title: "Mercado envio Flex y Tineda Nube", 
-      desc: "Envios Diarios entrega Same Day",
-      href: "",
+      title: "Mercado envio Flex y Tienda Nube", 
+      desc: "Envíos Diarios entrega Same Day",
+      href: "/servicios/flex",
       icon: "🍽️"
     },
-  ,
     { 
       title: "Documentación", 
       desc: "Entrega de documentos legales",
