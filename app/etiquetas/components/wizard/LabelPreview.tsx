@@ -55,7 +55,7 @@ export default function LabelPreview({
           })
           // Actualizar el store directamente
           const { setAuth } = useAuthStore.getState()
-          setAuth(session.user, null)
+          setAuth(session.user, undefined)
         } else {
           console.error('❌ [LabelPreview] No hay sesión en Supabase:', error)
         }

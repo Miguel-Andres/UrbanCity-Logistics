@@ -9,7 +9,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setAuth, setUser, setLoading } = useAuthStore()
+  const { setAuth, setUser, setLoading, setStoreName } = useAuthStore()
 
   useEffect(() => {
     let mounted = true
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setAuth(session.user, profile?.store_name)
           } catch (error) {
             console.error('Error obteniendo profile:', error)
-            setAuth(session.user, null)
+            setAuth(session.user, undefined)
           }
         } else if (event === 'SIGNED_OUT') {
           // Usuario se deslogueó
