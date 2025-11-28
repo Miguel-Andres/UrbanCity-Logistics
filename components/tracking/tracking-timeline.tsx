@@ -60,11 +60,13 @@ export function TrackingTimeline({ events }: TrackingTimelineProps) {
       date: date.toLocaleDateString('es-AR', {
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric'
+        year: 'numeric',
+        timeZone: 'America/Argentina/Buenos_Aires'
       }),
       time: date.toLocaleTimeString('es-AR', {
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        timeZone: 'America/Argentina/Buenos_Aires'
       })
     }
   }
