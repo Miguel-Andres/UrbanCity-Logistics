@@ -14,6 +14,8 @@ export interface PDFData {
   montoACobrar?: number
   observaciones?: string
   tipoEtiqueta?: string
+  tracking_code?: string  // Agregado para incluir en el PDF
+  store_name?: string      // Nombre de la tienda del vendedor
 }
 
 export interface PDFOptions {

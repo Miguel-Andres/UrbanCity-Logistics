@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation'
 export default function AccessPage() {
     const router = useRouter()
     const signInWithGoogle = async () => {
-        const supabase = await createClient()
+        const supabase = createClient()
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
+                redirectTo: `${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : window.location.origin}/auth/callback`,
             },
         })
 

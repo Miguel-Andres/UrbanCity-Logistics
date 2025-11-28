@@ -372,9 +372,15 @@ const CSS_STYLES = `
 `
 
 export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
-  const timestamp = Date.now()
-  const random = Math.floor(Math.random() * 10000)
-  const codigoSeguimiento = `UC-${timestamp}-${random}`
+  // Usar tracking_code si existe, si no generar uno temporal (fallback)
+  const codigoSeguimiento = datos.tracking_code || (() => {
+    const timestamp = Date.now()
+    const random = Math.floor(Math.random() * 10000)
+    return `UC-${timestamp}-${random}`
+  })()
+  
+  // Usar store_name si existe, si no usar valor por defecto
+  const storeName = datos.store_name || 'Mi Tienda'
   
   const tipoEtiqueta = datos.tipoEtiqueta as keyof typeof MEDIDAS_ETIQUETAS
   const medidas = MEDIDAS_ETIQUETAS[tipoEtiqueta] || MEDIDAS_ETIQUETAS['10x15']
@@ -395,8 +401,16 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
   try {
     const qrSize = tipoEtiqueta === '10x10' ? 60 : 
                   tipoEtiqueta === 'A4' ? 120 : 80
+    
+    // Generar QR para actualizar estado (/delivery/[tracking_code])
+    const baseUrl = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : process.env.NEXT_PUBLIC_SITE_URL
+    const qrUrl = `${baseUrl}/delivery/${codigoSeguimiento}`
+    
+    console.log('PDF QR - URL generada:', qrUrl)
                   
-    qrCodeDataUrl = await QRCode.toDataURL(codigoSeguimiento, {
+    qrCodeDataUrl = await QRCode.toDataURL(qrUrl, {
       width: qrSize,
       margin: 1,
       color: {
@@ -427,7 +441,7 @@ export async function generarHTMLTemplate(datos: PDFData): Promise<string> {
           <!-- Información Básica - Vendedor y Fecha -->
           <div class="basic-info">
             <div class="info-item">
-              <span class="info-label">Vendedor:</span> STOREBA
+              <span class="info-label">Vendedor:</span> ${storeName}
             </div>
             <div class="info-item">
               <span class="info-label">Fecha:</span> ${fechaFormateada}

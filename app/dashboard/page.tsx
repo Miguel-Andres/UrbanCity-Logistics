@@ -1,8 +1,84 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { UserMenu } from '@/app/components/UserMenu'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { Navbar } from '@/app/components/Navbar'
 import { getProfile } from '@/app/profile/actions'
+import StatsCard from '@/components/dashboard/StatsCard'
+import SimpleTable from '@/components/dashboard/SimpleTable'
+import UserProfileCard from '@/components/dashboard/UserProfileCard'
+
+// Obtener datos del dashboard directamente de Supabase
+async function getDashboardData() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return null
+  }
+
+  try {
+    // Obtener todos los envíos del usuario
+    const { data: shipments, error } = await supabase
+      .from('shipments')
+      .select(`
+        id,
+        tracking_code,
+        status,
+        created_at,
+        delivered_at,
+        payment_type,
+        amount_to_charge,
+        recipient_name,
+        recipient_phone,
+        recipient_address
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching shipments:', error)
+      throw error
+    }
+
+    const today = new Date().toISOString().split('T')[0]
+    
+    // Calcular estadísticas
+    const stats = {
+      hoy_total: shipments?.filter(s => s.created_at.startsWith(today)).length || 0,
+      pendientes: shipments?.filter(s => s.status === 'pending').length || 0,
+      entregados_hoy: shipments?.filter(s => 
+        s.status === 'delivered' && 
+        s.delivered_at && 
+        s.delivered_at.startsWith(today)
+      ).length || 0,
+      a_cobrar: shipments?.filter(s => 
+        s.payment_type === 'COBRAR' && s.status !== 'delivered'
+      ).reduce((sum, s) => sum + (s.amount_to_charge || 0), 0) || 0,
+      total_envios: shipments?.length || 0
+    }
+
+    // Últimos 5 envíos
+    const ultimos_envios = shipments?.slice(0, 5) || []
+
+    return {
+      stats,
+      ultimos_envios
+    }
+
+  } catch (error) {
+    console.error('Dashboard data error:', error)
+    return {
+      stats: {
+        hoy_total: 0,
+        pendientes: 0,
+        entregados_hoy: 0,
+        a_cobrar: 0,
+        total_envios: 0
+      },
+      ultimos_envios: []
+    }
+  }
+}
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -13,198 +89,134 @@ export default async function DashboardPage() {
         redirect('/access')
     }
 
-    // Obtener perfil del usuario
+    // Obtener perfil del usuario y datos del dashboard
     const profile = await getProfile()
+    const dashboardData = await getDashboardData() || {
+        stats: {
+            hoy_total: 0,
+            pendientes: 0,
+            entregados_hoy: 0,
+            a_cobrar: 0,
+            total_envios: 0
+        },
+        ultimos_envios: []
+    }
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black">
-            {/* Header */}
-            <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="relative rounded-full h-10 w-10 bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-                                <svg
-                                    className="w-5 h-5 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                    />
-                                </svg>
-                            </div>
-                            <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-                                Urban City Logistics
-                            </h1>
-                        </div>
-                        <UserMenu user={user} />
-                    </div>
+        <div className="min-h-screen bg-slate-950 relative">
+            {/* Background de líneas de tren sutil para toda la página */}
+            <div className="fixed inset-0 z-0">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900"></div>
+                <div className="absolute inset-0 opacity-[0.04]">
+                    <img src="/subway-lines.png" alt="" className="w-full h-full object-cover mix-blend-screen" />
                 </div>
-            </header>
+            </div>
+            
+            {/* Header */}
+            <Navbar 
+                user={user} 
+                subtitle={`Bienvenido, ${user.user_metadata?.full_name || user.email?.split('@')[0]}!`}
+            />
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-8 border border-zinc-200 dark:border-zinc-800">
-                    {/* Welcome Section */}
-                    <div className="mb-8">
-                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
-                            ¡Bienvenido, {user.user_metadata?.full_name || user.email?.split('@')[0]}! 👋
-                        </h2>
-                        <p className="text-zinc-600 dark:text-zinc-400">
-                            Has iniciado sesión exitosamente en el sistema.
-                        </p>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                  {/* Stats Grid */}
+                  <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <StatsCard
+                        title="Envíos hoy"
+                        value={dashboardData.stats.hoy_total}
+                        icon="📦"
+                        description="Generados hoy"
+                    />
+                    <StatsCard
+                        title="Pendientes"
+                        value={dashboardData.stats.pendientes}
+                        icon="⏳"
+                        description="Por entregar"
+                    />
+                    <StatsCard
+                        title="Entregados hoy"
+                        value={dashboardData.stats.entregados_hoy}
+                        icon="✅"
+                        description="Completados"
+                    />
+                    <StatsCard
+                        title="A cobrar hoy"
+                        value={dashboardData.stats.a_cobrar}
+                        icon="💰"
+                        description="Envíos contra entrega"
+                    />
                     </div>
 
-                    {/* User Info Card */}
-                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-zinc-800 dark:to-zinc-800 rounded-xl p-6 mb-8 border border-orange-200 dark:border-zinc-700">
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
-                            Información de tu cuenta
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                <div>
-                                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Nombre</p>
-                                    <p className="text-zinc-900 dark:text-zinc-100">{user.user_metadata?.full_name || 'No especificado'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                <div>
-                                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</p>
-                                    <p className="text-zinc-900 dark:text-zinc-100">{user.email}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Teléfono</p>
-                                    <p className="text-zinc-900 dark:text-zinc-100">
-                                        {profile?.phone || (
-                                            <Link href="/profile" className="text-orange-600 dark:text-orange-400 hover:underline text-sm">
-                                                Agregar teléfono →
-                                            </Link>
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <svg className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Nombre de Tienda</p>
-                                    <p className="text-zinc-900 dark:text-zinc-100">
-                                        {profile?.store_name || (
-                                            <Link href="/profile" className="text-orange-600 dark:text-orange-400 hover:underline text-sm">
-                                                Agregar nombre →
-                                            </Link>
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
+                    {/* User Profile Card */}
+                    <div className="lg:col-span-1">
+                        <UserProfileCard
+                            userName={user.user_metadata?.full_name}
+                            email={user.email || ''}
+                            phone={profile?.phone || undefined}
+                            storeName={profile?.store_name || undefined}
+                        />
+                    </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-slate-50">Acciones Rápidas</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <Link
+                            href="/etiquetas"
+                            className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl text-center flex flex-col items-center justify-center p-6"
+                        >
+                            <div className="text-3xl mb-2">📦</div>
+                            <h3 className="font-semibold">Nuevo Envío</h3>
+                            <p className="text-xs opacity-90 mt-1">Genera etiqueta en 30s</p>
+                        </Link>
+                        
+                        <Link
+                            href="/mis-envios"
+                            className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl hover:border-slate-600 transition-all text-center flex flex-col items-center justify-center p-6"
+                        >
+                            <div className="text-3xl mb-2">📋</div>
+                            <h3 className="font-semibold text-slate-50">Mis Envíos</h3>
+                        </Link>
+
+                        <Link
+                            href="/tracking"
+                            className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl hover:border-slate-600 transition-all text-center flex flex-col items-center justify-center p-6"
+                        >
+                            <div className="text-3xl mb-2">🔍</div>
+                            <h3 className="font-semibold text-slate-50">Rastrear</h3>
+                        </Link>
+
+                        <div className="group bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl text-center flex flex-col items-center justify-center p-6 opacity-75 cursor-not-allowed relative overflow-hidden">
+                        {/* Overlay de "Próximamente" */}
+                        <div className="absolute inset-0 bg-slate-900/20 flex items-center justify-center">
+                            <span className="bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1 rounded-full">Próximamente</span>
                         </div>
+                        
+                        <div className="text-3xl mb-2">🧮</div>
+                        <h3 className="font-semibold text-slate-400">Calculadora</h3>
+                        <p className="text-xs text-slate-500 mt-1">Tarifas y zonas</p>
                     </div>
-
-                    {/* Quick Actions */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
-                            Accesos rápidos
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <Link
-                                href="/etiquetas"
-                                className="group p-6 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-200 hover:shadow-lg"
-                            >
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
-                                        <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-50">Etiquetas</h4>
-                                </div>
-                                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                    Genera etiquetas de envío
-                                </p>
-                            </Link>
-
-                            <Link
-                                href="/profile"
-                                className="group p-6 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-200 hover:shadow-lg"
-                            >
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
-                                        <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-50">Mi Perfil</h4>
-                                </div>
-                                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                    Edita tu información
-                                </p>
-                            </Link>
-
-                            <Link
-                                href="/tracking"
-                                className="group p-6 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-200 hover:shadow-lg"
-                            >
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
-                                        <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="font-semibold text-zinc-900 dark:text-zinc-50">Tracking</h4>
-                                </div>
-                                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                    Rastrea tus envíos
-                                </p>
-                            </Link>
-
-                            <div className="p-6 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl opacity-50 cursor-not-allowed">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg">
-                                        <svg className="w-6 h-6 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="font-semibold text-zinc-600 dark:text-zinc-500">Reportes</h4>
-                                </div>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-600">
-                                    Próximamente
-                                </p>
-                            </div>
-
-                            <div className="p-6 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl opacity-50 cursor-not-allowed">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="p-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg">
-                                        <svg className="w-6 h-6 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="font-semibold text-zinc-600 dark:text-zinc-500">Configuración</h4>
-                                </div>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-600">
-                                    Próximamente
-                                </p>
-                            </div>
-                        </div>
                     </div>
+                </div>
+
+                {/* Últimos Envíos */}
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-slate-50">Últimos Envíos</h2>
+                        <Link 
+                            href="/mis-envios" 
+                            className="text-sm text-orange-400 hover:text-orange-300 underline font-medium"
+                        >
+                            Ver todos →
+                        </Link>
+                    </div>
+                    
+                    <SimpleTable shipments={dashboardData.ultimos_envios} />
                 </div>
             </main>
         </div>

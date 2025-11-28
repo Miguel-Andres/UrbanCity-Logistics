@@ -3,9 +3,11 @@
  */
 'use client'
 
-import { useState } from 'react'
-import { FileText, Download, Printer, Settings, Barcode } from 'lucide-react'
-import { useFormData } from '@/lib/stores/useLabelStore'
+import { useState, useEffect } from 'react'
+import { FileText, Download, Printer, Settings, Barcode, Copy, ExternalLink, QrCode, PlusCircle } from 'lucide-react'
+import { useFormData, useLabelStore } from '@/lib/stores/useLabelStore'
+import { useAuthStore } from '@/lib/stores/useAuthStore'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function LabelPreview({ 
   onPrevStep, 
@@ -19,9 +21,69 @@ export default function LabelPreview({
   nextStepDisabled?: boolean 
 }) {
   const formData = useFormData()
+  const { storeName, user, isAuthenticated } = useAuthStore()
+  const { resetForm } = useLabelStore()
   const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
+  const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
+  const [showNewShipmentButton, setShowNewShipmentButton] = useState(false)
+
+  // Efecto para verificar y cargar el usuario si no está en el store
+  useEffect(() => {
+    console.log('🔍 [LabelPreview] Montado. Estado actual del usuario:', {
+      user_id: user?.id,
+      user_email: user?.email,
+      isAuthenticated
+    })
+
+    // Si no hay usuario en el store, intentar obtenerlo directamente de Supabase
+    if (!user) {
+      console.log('🔄 [LabelPreview] No hay usuario en store, obteniendo de Supabase...')
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
+      const getSession = async () => {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          console.log('✅ [LabelPreview] Sesión obtenida de Supabase:', {
+            id: session.user.id,
+            email: session.user.email
+          })
+          // Actualizar el store directamente
+          const { setAuth } = useAuthStore.getState()
+          setAuth(session.user, undefined)
+        } else {
+          console.error('❌ [LabelPreview] No hay sesión en Supabase:', error)
+        }
+      }
+
+      getSession()
+    }
+  }, [user])
+
+  // Función para copiar al portapapeles
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      alert(`${type} copiado al portapapeles`)
+    } catch (err) {
+      console.error('Error al copiar:', err)
+      alert('Error al copiar')
+    }
+  }
+
+  // Función para nuevo envío
+  const handleNewShipment = () => {
+    resetForm()
+    setTrackingInfo(null)
+    setValidationError('')
+    setShowNewShipmentButton(false)
+    setSelectedSize('10x15')
+  }
 
   // Función de validación
   const validateFormData = (): boolean => {
@@ -68,10 +130,29 @@ export default function LabelPreview({
       return
     }
 
+    // Debug: mostrar estado actual del usuario
+    console.log('🔍 [handleGeneratePDF] Estado del usuario:', {
+      user_id: user?.id,
+      user_email: user?.email,
+      storeName: storeName
+    })
+
+    // Verificar que tenemos un usuario
+    if (!user?.id) {
+      console.error('❌ [handleGeneratePDF] No hay user_id disponible')
+      setValidationError('Sesión no válida. Por favor, recarga la página e inicia sesión nuevamente.')
+      return
+    }
+
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado
-      const updatedFormData = { ...formData, tipoEtiqueta: selectedSize }
+      // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const updatedFormData = { 
+        ...formData, 
+        tipoEtiqueta: selectedSize,
+        store_name: storeName || 'Mi Tienda',
+        user_id: user.id  // Ahora seguro que no es null
+      }
       
       const response = await fetch('/api/generar-pdf', {
         method: 'POST',
@@ -87,11 +168,30 @@ export default function LabelPreview({
         const a = document.createElement('a')
         a.style.display = 'none'
         a.href = url
-        a.download = `etiqueta-${selectedSize}-${Date.now()}.pdf`
+        
+        // Obtener nombre del archivo del header Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        let filename = `etiqueta-${selectedSize}-${Date.now()}.pdf`
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename="(.+)"/)
+          if (match) filename = match[1]
+        }
+        a.download = filename
+        
+        // Obtener info de tracking
+        const trackingCode = response.headers.get('X-Tracking-Code')
+        const trackingUrl = response.headers.get('X-Tracking-URL')
+        if (trackingCode && trackingUrl) {
+          setTrackingInfo({ code: trackingCode, url: trackingUrl })
+        }
+        
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
+        
+        // Mostrar botón de nuevo envío
+        setShowNewShipmentButton(true)
       } else {
         console.error('Error generando PDF')
         alert('Error al generar el PDF. Por favor, intente nuevamente.')
@@ -110,11 +210,30 @@ export default function LabelPreview({
       return
     }
 
+    // Debug: mostrar estado actual del usuario
+    console.log('🔍 [handleGenerateZPL] Estado del usuario:', {
+      user_id: user?.id,
+      user_email: user?.email,
+      storeName: storeName
+    })
+
+    // Verificar que tenemos un usuario
+    if (!user?.id) {
+      console.error('❌ [handleGenerateZPL] No hay user_id disponible')
+      setValidationError('Sesión no válida. Por favor, recarga la página e inicia sesión nuevamente.')
+      return
+    }
+
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado
-      const updatedFormData = { ...formData, tipoEtiqueta: selectedSize }
-      
+      // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const updatedFormData = { 
+        ...formData, 
+        tipoEtiqueta: selectedSize,
+        store_name: storeName || 'Mi Tienda',
+        user_id: user.id  // Ahora seguro que no es null
+      }
+
       const response = await fetch('/api/generar-zpl', {
         method: 'POST',
         headers: {
@@ -130,14 +249,34 @@ export default function LabelPreview({
         const a = document.createElement('a')
         a.style.display = 'none'
         a.href = url
-        a.download = `etiqueta-${formData.tipoEnvio?.replace(/\s+/g, '') || 'SINTIPO'}-${formData.nombre?.substring(0, 12).replace(/\s+/g, '') || 'SINNOMBRE'}.txt`
+        
+        // Obtener nombre del archivo del header Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        let filename = `etiqueta-${formData.tipoEnvio?.replace(/\s+/g, '') || 'SINTIPO'}-${formData.nombre?.substring(0, 12).replace(/\s+/g, '') || 'SINNOMBRE'}.txt`
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename=\"(.+)\"/);
+          if (match) filename = match[1]
+        }
+        a.download = filename
+        
+        // Obtener info de tracking
+        const trackingCode = response.headers.get('X-Tracking-Code')
+        const trackingUrl = response.headers.get('X-Tracking-URL')
+        if (trackingCode && trackingUrl) {
+          setTrackingInfo({ code: trackingCode, url: trackingUrl })
+        }
+        
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
         document.body.removeChild(a)
+        
+        // Mostrar botón de nuevo envío
+        setShowNewShipmentButton(true)
       } else {
-        console.error('Error generando ZPL')
-        alert('Error al generar el ZPL. Por favor, intente nuevamente.')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Error generando ZPL:', response.status, errorData)
+        alert(errorData.error || 'Error al generar el ZPL. Por favor, intente nuevamente.')
       }
     } catch (error) {
       console.error('Error:', error)
@@ -190,7 +329,7 @@ export default function LabelPreview({
         <div className="grid grid-cols-2 gap-3 mb-6">
           <button
             onClick={handleGeneratePDF}
-            disabled={isGenerating}
+            disabled={isGenerating || showNewShipmentButton}
             className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm"
           >
             <Download className="w-4 h-4" />
@@ -199,11 +338,11 @@ export default function LabelPreview({
 
           <button
             onClick={handleGenerateZPL}
-            disabled={isGenerating}
+            disabled={isGenerating || showNewShipmentButton}
             className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed text-sm"
           >
             <Barcode className="w-4 h-4" />
-            <span>Generar ZPL</span>
+            <span>{isGenerating ? 'Generando...' : 'Generar ZPL'}</span>
           </button>
         </div>
 
@@ -221,6 +360,67 @@ export default function LabelPreview({
               </div>
             </div>
           </div>
+        )}
+
+        {/* Info de Tracking */}
+        {trackingInfo && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center mb-2">
+              <QrCode className="w-5 h-5 text-green-600 mr-2" />
+              <h4 className="text-sm font-semibold text-green-800">Código de Tracking Generado</h4>
+            </div>
+            <div className="space-y-3">
+              {/* Código grande */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-3 py-3 rounded-lg">
+                <div className="text-center">
+                  <p className="text-xs text-blue-600 mb-1 font-medium">Código de Seguimiento</p>
+                  <p className="font-mono text-lg font-bold text-blue-900">{trackingInfo.code}</p>
+                </div>
+              </div>
+              
+              {/* Link visible */}
+              <div className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg">
+                <p className="text-xs text-gray-600 mb-1 font-medium text-center">Link de Seguimiento</p>
+                <p className="text-xs text-gray-700 break-all font-mono bg-gray-100 px-2 py-1 rounded text-center">{trackingInfo.url}</p>
+              </div>
+              
+              {/* Texto de ayuda */}
+              <p className="text-xs text-gray-500 text-center italic">
+                💡 Copia este link y daselo a tu cliente para mantenerlo informado sobre el estado de su envío
+              </p>
+              
+              {/* Botones de acción */}
+              <div className="flex gap-2 justify-center">
+                <button
+                  onClick={() => copyToClipboard(trackingInfo.url, 'Link de tracking')}
+                  className="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 font-medium py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs"
+                >
+                  <Copy className="w-3.5 h-3.5 text-gray-600" />
+                  <span>COPIAR LINK</span>
+                </button>
+                <a
+                  href={trackingInfo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-1.5 px-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 text-xs shadow-sm hover:shadow-md"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>VER SEGUIMIENTO</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Botón Nueva Etiqueta */}
+        {showNewShipmentButton && (
+          <button
+            onClick={handleNewShipment}
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+          >
+            <PlusCircle className="w-5 h-5" />
+            <span>NUEVA ETIQUETA</span>
+          </button>
         )}
 
         {/* Navigation buttons */}

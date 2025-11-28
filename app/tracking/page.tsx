@@ -1,112 +1,180 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, Package, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function TrackingPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+export default function TrackingPage() {
+  const [trackingCode, setTrackingCode] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
 
-    if (!user) {
-        redirect('/access')
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!trackingCode.trim()) {
+      setError('Por favor, ingresa un código de seguimiento')
+      return
     }
 
-    return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black">
-            {/* Header */}
-            <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/dashboard"
-                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
-                        >
-                            <svg className="w-6 h-6 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </Link>
-                        <div>
-                            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                                Tracking de Envíos
-                            </h1>
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                                Rastrea tus paquetes en tiempo real
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </header>
+    setIsSearching(true)
+    setError('')
+    
+    try {
+      // Normalizar el código y redirigir
+      const normalizedCode = trackingCode.trim().toUpperCase()
+      router.push(`/tracking/${normalizedCode}`)
+    } catch (err) {
+      setError('Error al buscar el envío')
+    } finally {
+      setIsSearching(false)
+    }
+  }
 
-            {/* Main Content */}
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                    {/* Search Section */}
-                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-8">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 bg-white/20 rounded-lg">
-                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-white">
-                                    Busca tu envío
-                                </h2>
-                                <p className="text-orange-100">
-                                    Ingresa el número de seguimiento
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Search Input */}
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Ej: UCL123456789"
-                                className="w-full px-4 py-4 pr-12 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:ring-2 focus:ring-white focus:outline-none text-lg"
-                            />
-                            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Info Section */}
-                    <div className="p-8">
-                        <div className="text-center py-12">
-                            <div className="inline-block p-4 bg-zinc-100 dark:bg-zinc-800 rounded-full mb-4">
-                                <svg className="w-16 h-16 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                </svg>
-                            </div>
-                            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-                                Ingresa un número de seguimiento
-                            </h3>
-                            <p className="text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
-                                Introduce el código de seguimiento de tu paquete para ver su estado y ubicación en tiempo real.
-                            </p>
-                        </div>
-
-                        {/* Recent Shipments */}
-                        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-6">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-4">
-                                Envíos Recientes
-                            </h3>
-                            <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
-                                <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <p>No hay envíos registrados</p>
-                                <Link href="/etiquetas" className="text-orange-600 hover:underline text-sm mt-2 inline-block">
-                                    Crear nueva etiqueta →
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/"
+                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                <span className="font-medium">Volver</span>
+              </Link>
+            </div>
+            
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900">
+                URBAN CITY LOGISTICS
+              </h1>
+              <p className="text-gray-600">Seguimiento de Envíos</p>
+            </div>
+            
+            <div className="w-24"></div> {/* Spacer para centrar el logo */}
+          </div>
         </div>
-    )
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          {/* Search Section */}
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-8">
+            <div className="flex items-center justify-center mb-6">
+              <div className="p-4 bg-white/20 rounded-full">
+                <Search className="w-12 h-12 text-white" />
+              </div>
+            </div>
+            
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-white mb-2">
+                ¿Dónde está tu paquete?
+              </h2>
+              <p className="text-orange-100 text-lg">
+                Ingresa el código de seguimiento para rastrear tu envío
+              </p>
+            </div>
+
+            {/* Search Form */}
+            <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={trackingCode}
+                  onChange={(e) => {
+                    setTrackingCode(e.target.value)
+                    setError('')
+                  }}
+                  placeholder="Ej: UC-ABC123"
+                  className="w-full px-6 py-4 pr-14 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-white focus:outline-none text-lg shadow-lg"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  disabled={isSearching}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+                >
+                  {isSearching ? (
+                    <div className="w-6 h-6 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Search className="w-6 h-6" />
+                  )}
+                </button>
+              </div>
+              
+              {error && (
+                <p className="mt-3 text-sm text-orange-100 text-center">
+                  {error}
+                </p>
+              )}
+            </form>
+          </div>
+
+          {/* Info Section */}
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="text-center">
+                <div className="p-3 bg-blue-50 rounded-lg inline-block mb-3">
+                  <Package className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">Seguimiento en Tiempo Real</h3>
+                <p className="text-sm text-gray-600">Actualizaciones instantáneas del estado de tu envío</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="p-3 bg-green-50 rounded-lg inline-block mb-3">
+                  <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center text-white font-bold">
+                    ✓
+                  </div>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">Notificaciones de Entrega</h3>
+                <p className="text-sm text-gray-600">Recibe alertas cuando tu paquete sea entregado</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="p-3 bg-purple-50 rounded-lg inline-block mb-3">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm">
+                    <Search className="w-4 h-4" />
+                  </div>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">Historial Completo</h3>
+                <p className="text-sm text-gray-600">Consulta todo el trayecto de tu paquete</p>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">¿Cómo encontrar tu código de seguimiento?</h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">
+                    1
+                  </div>
+                  <p>Revisa el correo electrónico de confirmación que recibiste al realizar tu compra</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">
+                    2
+                  </div>
+                  <p>Busca en la etiqueta del paquete el código que comienza con "UC-"</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs mt-0.5">
+                    3
+                  </div>
+                  <p>Contacta al vendedor para solicitar tu código de seguimiento</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
 }

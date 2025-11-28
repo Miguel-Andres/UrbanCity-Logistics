@@ -11,12 +11,14 @@
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.83.0",
+    "kill-port": "^2.0.1",
     "lucide-react": "^0.553.0",
     "next": "16.0.1",
     "puppeteer": "^24.30.0",
     "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "sweetalert2": "^11.26.3",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

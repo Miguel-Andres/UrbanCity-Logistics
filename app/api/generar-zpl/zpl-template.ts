@@ -7,10 +7,15 @@ import { FormData } from '@/app/etiquetas/types'
  * Genera código ZPL basado en tu diseño original pero con datos dinámicos del formulario
  */
 export function generarZPLEstandar(datos: FormData): string {
-  // Generar código de seguimiento único
-  const timestamp = Date.now()
-  const random = Math.floor(Math.random() * 10000)
-  const codigoSeguimiento = `UC-${timestamp}-${random}`
+  // Usar tracking_code si existe, si no generar uno temporal (fallback)
+  const codigoSeguimiento = datos.tracking_code || (() => {
+    const timestamp = Date.now()
+    const random = Math.floor(Math.random() * 10000)
+    return `UC-${timestamp}-${random}`
+  })()
+  
+  // Usar store_name si existe, si no usar valor por defecto
+  const storeName = datos.store_name || 'Mi Tienda'
   
   // Formatear fecha como en tu ejemplo: 3/10/2025
   const fechaFormateada = datos.fecha 
@@ -40,7 +45,7 @@ export function generarZPLEstandar(datos: FormData): string {
 ^LL1520
 ^FO50,200^CF0,60^FDURBAN CITY LOGISTICS^FS
 ^FO50,260^GB700,3,3^FS
-^FO50,280^CF0,35^FDRostoReba^FS
+^FO50,280^CF0,35^FD${storeName}^FS
 ^FO400,280^CF0,30^FDFecha: ${fechaFormateada}^FS
 ^FO50,320^GB700,1,1^FS
 ^FO50,340^CF0,30^FDNombre:^FS
@@ -79,11 +84,14 @@ export function generarZPLEstandar(datos: FormData): string {
     zpl += `\n^FO50,620^CF0,20^FB700,3,0,L^FDOBSERVACIONES: ${obsTruncadas}^FS`
   }
   
-  // Generar QR con todos los datos relevantes
-  const qrData = `MA,UCL|${datos.nombre}|${datos.telefono}|${datos.direccion}|${datos.localidad}|${producto}|${montoNumero}|${datos.tipoEnvio}|${datos.tipoEntrega}`
+  // Generar QR para actualizar estado (/delivery/[tracking_code])
+  const baseUrl = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:3000' 
+    : process.env.NEXT_PUBLIC_SITE_URL
+  const qrUrl = `${baseUrl}/delivery/${codigoSeguimiento}`
   
-  zpl += `\n^FO250,740^BQN,2,8^FD${qrData}^FS
-^FO250,1100^CF0,30^FD${codigoSeguimiento}^FS
+  zpl += `\n^FO250,740^BQN,2,8^FDMA,${qrUrl}^FS
+^FO300,1100^CF0,30^FD${codigoSeguimiento}^FS
 ^XZ`
   
   return zpl
