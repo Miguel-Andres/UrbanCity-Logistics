@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { User } from '@supabase/supabase-js'
@@ -15,34 +16,44 @@ export function UserMenu({ user }: UserMenuProps) {
     const { logout } = useAuthStore()
 
     const handleSignOut = async () => {
-        console.log('Iniciando logout...')
+        console.log('🚪 [UserMenu] Iniciando logout...')
         try {
-            // Primero limpiar el store de Zustand
-            logout()
-            
-            // Luego hacer logout en Supabase
+            // Primero hacer logout en Supabase para que el AuthProvider lo detecte
+            console.log('🔐 [UserMenu] Haciendo logout en Supabase...')
             const { error } = await supabase.auth.signOut()
             
             if (error) {
-                console.error('Error en logout de Supabase:', error)
+                console.error('❌ [UserMenu] Error en logout de Supabase:', error)
             } else {
-                console.log('Logout exitoso')
+                console.log('✅ [UserMenu] Logout en Supabase exitoso')
             }
             
-            // Redirigir y refresh
+            // Limpiar el store de Zustand
+            console.log('🧹 [UserMenu] Limpiando Zustand store...')
+            logout()
+            
+            // Forzar una espera para asegurar que el AuthProvider procese el evento
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redirigir
+            console.log('🔄 [UserMenu] Redirigiendo a /access...')
             router.push('/access')
-            router.refresh()
+            
         } catch (error) {
-            console.error('Error en logout:', error)
-            // Aun así redirigir
+            console.error('❌ [UserMenu] Error en logout:', error)
+            // En caso de error, limpiar store y redirigir igualmente
+            logout()
             router.push('/access')
-            router.refresh()
         }
     }
 
     return (
         <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 bg-white dark:bg-zinc-800 rounded-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 shadow-sm">
+            <Link 
+                href="/dashboard" 
+                className="flex items-center gap-3 bg-white dark:bg-zinc-800 rounded-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                title="Ir al dashboard"
+            >
                 {/* Avatar */}
                 {user.user_metadata?.avatar_url ? (
                     <img
@@ -65,49 +76,49 @@ export function UserMenu({ user }: UserMenuProps) {
                         {user.email}
                     </p>
                 </div>
+            </Link>
 
-                {/* Profile Button */}
-                <a
-                    href="/profile"
-                    className="ml-2 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full transition-colors"
-                    title="Mi perfil"
+            {/* Profile Button */}
+            <a
+                href="/profile"
+                className="ml-2 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full transition-colors"
+                title="Mi perfil"
+            >
+                <svg
+                    className="w-5 h-5 text-zinc-600 dark:text-zinc-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                 >
-                    <svg
-                        className="w-5 h-5 text-zinc-600 dark:text-zinc-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                    </svg>
-                </a>
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                </svg>
+            </a>
 
-                {/* Logout Button */}
-                <button
-                    onClick={handleSignOut}
-                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full transition-colors"
-                    title="Cerrar sesión"
+            {/* Logout Button */}
+            <button
+                onClick={handleSignOut}
+                className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full transition-colors"
+                title="Cerrar sesión"
+            >
+                <svg
+                    className="w-5 h-5 text-zinc-600 dark:text-zinc-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                 >
-                    <svg
-                        className="w-5 h-5 text-zinc-600 dark:text-zinc-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                        />
-                    </svg>
-                </button>
-            </div>
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                </svg>
+            </button>
         </div>
     )
 }

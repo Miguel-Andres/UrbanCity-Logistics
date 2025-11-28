@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { UserMenu } from '@/app/components/UserMenu'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { Navbar } from '@/app/components/Navbar'
 import { getProfile } from '@/app/profile/actions'
 import StatsCard from '@/components/dashboard/StatsCard'
 import SimpleTable from '@/components/dashboard/SimpleTable'
@@ -113,43 +113,10 @@ export default async function DashboardPage() {
             </div>
             
             {/* Header */}
-            <header className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 relative z-10">
-                {/* Background subway lines solo para header */}
-                <div className="absolute inset-0 opacity-8">
-                    <img src="/subway-lines.png" alt="" className="w-full h-full object-cover mix-blend-screen" />
-                </div>
-                
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="relative rounded-full h-10 w-10 bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-                                <svg
-                                    className="w-5 h-5 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                    />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-slate-50">
-                                    Urban City Logistics
-                                </h1>
-                                <p className="text-sm text-slate-300">
-                                    Bienvenido, {user.user_metadata?.full_name || user.email?.split('@')[0]}!
-                                </p>
-                            </div>
-                        </div>
-                        <UserMenu user={user} />
-                    </div>
-                </div>
-            </header>
+            <Navbar 
+                user={user} 
+                subtitle={`Bienvenido, ${user.user_metadata?.full_name || user.email?.split('@')[0]}!`}
+            />
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
