@@ -69,6 +69,7 @@ export const useAuthStore = create<AuthState>()(
         storeName: state.storeName,
         isAuthenticated: state.isAuthenticated,
       }),
+      // No persistir isLoading porque debe volver a true en cada carga
     }
   )
 )

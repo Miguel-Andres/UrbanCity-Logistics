@@ -9,8 +9,13 @@ import ShippingForm from '@/app/etiquetas/components/wizard/ShippingForm'
 import LabelPreview from '@/app/etiquetas/components/wizard/LabelPreview'
 import { FormData } from '@/app/etiquetas/types'
 import { useLabelStore } from '@/lib/stores/useLabelStore'
+import { User } from '@supabase/supabase-js'
 
-export default function SingleLabelWizard() {
+interface SingleLabelWizardProps {
+  user: User
+}
+
+export default function SingleLabelWizard({ user }: SingleLabelWizardProps) {
   const [chatText, setChatText] = useState('')
   const { formData, updateField, updateMultipleFields, resetForm } = useLabelStore()
 
@@ -65,7 +70,7 @@ export default function SingleLabelWizard() {
 
         {/* Panel de Acción Rápida - Derecha */}
         <div>
-          <LabelPreview />
+          <LabelPreview user={user} />
         </div>
       </div>
     </div>

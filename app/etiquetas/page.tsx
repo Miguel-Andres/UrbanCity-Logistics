@@ -1,117 +1,19 @@
 /**
- * Página principal del generador de etiquetas - Arquitectura limpia y modular
+ * Página principal del generador de etiquetas - Server Component como dashboard
  */
-'use client'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { Navbar } from '@/app/components/Navbar'
+import EtiquetasClient from './EtiquetasClient'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { createBrowserClient } from '@supabase/ssr'
-import { UserMenu } from '@/app/components/UserMenu'
-import Tabs from '@/app/etiquetas/components/shared/Tabs'
-import SingleLabelWizard from '@/app/etiquetas/components/wizard/SingleLabelWizard'
-import MultipleLabelWizard from '@/app/etiquetas/components/multiple/MultipleLabelWizard'
-import { useActiveTab, useUIStore } from '@/lib/stores/useUIStore'
-import { useAuthStore } from '@/lib/stores/useAuthStore'
+export default async function EtiquetasPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-export default function EtiquetasPage() {
-  const router = useRouter()
-  const activeTab = useActiveTab()
-  const { setActiveTab } = useUIStore()
-  const { isAuthenticated, user } = useAuthStore()
-  const [currentUser, setCurrentUser] = useState(user)
-
-  // Verificar autenticación y obtener usuario
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (!isAuthenticated && !user) {
-        router.push('/access')
-        return
-      }
-
-      // Si no hay usuario en el store, obtener de Supabase
-      if (!user) {
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
-        
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          setCurrentUser(session.user)
-        } else {
-          router.push('/access')
-        }
-      } else {
-        setCurrentUser(user)
-      }
-    }
-
-    checkAuth()
-  }, [isAuthenticated, user, router])
-
-  if (!currentUser) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white">Cargando...</div>
-      </div>
-    )
+  // Si no está autenticado, redirigir a /access (igual que dashboard)
+  if (!user) {
+    redirect('/access')
   }
 
-  return (
-    <div className="min-h-screen bg-slate-950 relative">
-      {/* Background de líneas de tren */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900"></div>
-        <div className="absolute inset-0 opacity-[0.04]">
-          <img src="/subway-lines.png" alt="" className="w-full h-full object-cover mix-blend-screen" />
-        </div>
-      </div>
-
-      {/* Header */}
-      <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 relative z-10">
-        {/* Background subway lines solo para header */}
-        <div className="absolute inset-0 opacity-8">
-          <img src="/subway-lines.png" alt="" className="w-full h-full object-cover mix-blend-screen" />
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-slate-50">
-                Generador de Etiquetas
-              </h1>
-              <p className="text-sm text-slate-300">
-                Crea etiquetas de envío profesionales
-              </p>
-            </div>
-            <UserMenu user={currentUser} />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 bg-gray-50">
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
-        </div>
-
-        <section className="pb-32 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            {activeTab === 'single' ? (
-              <>
-                {/* Single Label Wizard */}
-                <SingleLabelWizard />
-              </>
-            ) : (
-              /* Multiple Labels Interface */
-              <MultipleLabelWizard />
-            )}
-          </div>
-        </section>
-      </div>
-    </div>
-  )
+  return <EtiquetasClient user={user} />
 }

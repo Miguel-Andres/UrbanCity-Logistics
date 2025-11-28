@@ -3,67 +3,33 @@
  */
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { FileText, Download, Printer, Settings, Barcode, Copy, ExternalLink, QrCode, PlusCircle } from 'lucide-react'
 import { useFormData, useLabelStore } from '@/lib/stores/useLabelStore'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
-import { createBrowserClient } from '@supabase/ssr'
+import { User } from '@supabase/supabase-js'
 
 export default function LabelPreview({ 
   onPrevStep, 
   onNextStep, 
   nextStepLabel = "Siguiente",
-  nextStepDisabled = false 
+  nextStepDisabled = false,
+  user 
 }: { 
   onPrevStep?: () => void
   onNextStep?: () => void
   nextStepLabel?: string
   nextStepDisabled?: boolean 
+  user: User
 }) {
   const formData = useFormData()
-  const { storeName, user, isAuthenticated } = useAuthStore()
+  const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
   const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
   const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
   const [showNewShipmentButton, setShowNewShipmentButton] = useState(false)
-
-  // Efecto para verificar y cargar el usuario si no está en el store
-  useEffect(() => {
-    console.log('🔍 [LabelPreview] Montado. Estado actual del usuario:', {
-      user_id: user?.id,
-      user_email: user?.email,
-      isAuthenticated
-    })
-
-    // Si no hay usuario en el store, intentar obtenerlo directamente de Supabase
-    if (!user) {
-      console.log('🔄 [LabelPreview] No hay usuario en store, obteniendo de Supabase...')
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
-
-      const getSession = async () => {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (session?.user) {
-          console.log('✅ [LabelPreview] Sesión obtenida de Supabase:', {
-            id: session.user.id,
-            email: session.user.email
-          })
-          // Actualizar el store directamente
-          const { setAuth } = useAuthStore.getState()
-          setAuth(session.user, undefined)
-        } else {
-          console.error('❌ [LabelPreview] No hay sesión en Supabase:', error)
-        }
-      }
-
-      getSession()
-    }
-  }, [user])
 
   // Función para copiar al portapapeles
   const copyToClipboard = async (text: string, type: string) => {
@@ -130,19 +96,12 @@ export default function LabelPreview({
       return
     }
 
-    // Debug: mostrar estado actual del usuario
-    console.log('🔍 [handleGeneratePDF] Estado del usuario:', {
-      user_id: user?.id,
-      user_email: user?.email,
+    // User viene como prop del Server Component - siempre disponible
+    console.log('✅ [handleGeneratePDF] User disponible:', {
+      user_id: user.id,
+      user_email: user.email,
       storeName: storeName
     })
-
-    // Verificar que tenemos un usuario
-    if (!user?.id) {
-      console.error('❌ [handleGeneratePDF] No hay user_id disponible')
-      setValidationError('Sesión no válida. Por favor, recarga la página e inicia sesión nuevamente.')
-      return
-    }
 
     setIsGenerating(true)
     try {
@@ -151,7 +110,7 @@ export default function LabelPreview({
         ...formData, 
         tipoEtiqueta: selectedSize,
         store_name: storeName || 'Mi Tienda',
-        user_id: user.id  // Ahora seguro que no es null
+        user_id: user.id  // user_id de la prop recibida
       }
       
       const response = await fetch('/api/generar-pdf', {
@@ -210,19 +169,12 @@ export default function LabelPreview({
       return
     }
 
-    // Debug: mostrar estado actual del usuario
-    console.log('🔍 [handleGenerateZPL] Estado del usuario:', {
-      user_id: user?.id,
-      user_email: user?.email,
+    // User viene como prop del Server Component - siempre disponible
+    console.log('✅ [handleGenerateZPL] User disponible:', {
+      user_id: user.id,
+      user_email: user.email,
       storeName: storeName
     })
-
-    // Verificar que tenemos un usuario
-    if (!user?.id) {
-      console.error('❌ [handleGenerateZPL] No hay user_id disponible')
-      setValidationError('Sesión no válida. Por favor, recarga la página e inicia sesión nuevamente.')
-      return
-    }
 
     setIsGenerating(true)
     try {
@@ -231,7 +183,7 @@ export default function LabelPreview({
         ...formData, 
         tipoEtiqueta: selectedSize,
         store_name: storeName || 'Mi Tienda',
-        user_id: user.id  // Ahora seguro que no es null
+        user_id: user.id  // user_id de la prop recibida
       }
 
       const response = await fetch('/api/generar-zpl', {
