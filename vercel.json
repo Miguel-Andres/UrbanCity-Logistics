@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "app/api/generar-pdf/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generar-zpl/route.ts": {
+      "maxDuration": 10
+    }
+  },
+  "build": {
+    "env": {
+      "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+    }
+  }
+}
