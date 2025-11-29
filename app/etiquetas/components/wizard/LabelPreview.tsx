@@ -25,12 +25,7 @@ export default function LabelPreview({
   const formData = useFormData()
   const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
-<<<<<<< HEAD
-  const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
-=======
-
-    const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
->>>>>>> af01ead (fix: Corregir problema de store_name en etiquetas (MI TIENDA → nombre real))
+const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
   const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
