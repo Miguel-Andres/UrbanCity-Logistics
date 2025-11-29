@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 
@@ -9,6 +10,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const router = useRouter()
   const { setAuth, setUser, setLoading, setStoreName } = useAuthStore()
 
   useEffect(() => {
@@ -92,8 +94,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         } else if (event === 'SIGNED_OUT') {
           // Usuario se deslogueó
-          console.log('Usuario deslogueado, limpiando store...')
+          console.log('🔓 [AuthProvider] Usuario deslogueado, limpiando store y redirigiendo...')
           setUser(null)
+          
+          // Redirigir automáticamente a access si no estamos ya allí
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/access')) {
+            console.log('🔄 [AuthProvider] Redirigiendo a /access...')
+            router.push('/access')
+          }
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           // Token se refrescó - actualizar el usuario en el store
           console.log('Token refrescado, actualizando usuario...')

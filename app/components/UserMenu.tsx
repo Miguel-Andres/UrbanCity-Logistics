@@ -22,26 +22,28 @@ export function UserMenu({ user }: UserMenuProps) {
     }
 
     const handleSignOut = async () => {
-        console.log('🚪 [UserMenu] Iniciando logout...')
+        console.log('🚪 [UserMenu] Iniciando logout via API...')
         try {
-            // Primero hacer logout en Supabase para que el AuthProvider lo detecte
-            console.log('🔐 [UserMenu] Haciendo logout en Supabase...')
-            const { error } = await supabase.auth.signOut()
+            // Llamar al endpoint de logout API
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
             
-            if (error) {
-                console.error('❌ [UserMenu] Error en logout de Supabase:', error)
+            if (!response.ok) {
+                console.error('❌ [UserMenu] Error en API logout:', response.status)
+                // Continuamos con el logout local aunque falle la API
             } else {
-                console.log('✅ [UserMenu] Logout en Supabase exitoso')
+                console.log('✅ [UserMenu] API logout exitoso')
             }
             
-            // Limpiar el store de Zustand
+            // Limpiar el store de Zustand inmediatamente
             console.log('🧹 [UserMenu] Limpiando Zustand store...')
             logout()
             
-            // Forzar una espera para asegurar que el AuthProvider procese el evento
-            await new Promise(resolve => setTimeout(resolve, 100))
-            
-            // Redirigir
+            // Redirigir a access (el AuthProvider detectará los cambios y manejará el estado)
             console.log('🔄 [UserMenu] Redirigiendo a /access...')
             router.push('/access')
             
