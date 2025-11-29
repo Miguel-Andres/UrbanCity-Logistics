@@ -26,14 +26,7 @@ export default function LabelPreview({
   const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
 
-  // Debug: Log para ver qué storeName tenemos
-  console.log('🏪 [LabelPreview] storeName actual:', {
-    storeName,
-    storeNameType: typeof storeName,
-    storeNameLength: storeName?.length,
-    userEmail: user.email
-  })
-  const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
+    const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
   const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
@@ -324,6 +317,7 @@ export default function LabelPreview({
           </button>
         </div>
 
+        
         {/* Mensaje de error de validación */}
         {validationError && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">

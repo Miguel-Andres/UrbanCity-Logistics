@@ -48,19 +48,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (session?.user) {
           // Obtener store_name del perfil
-          console.log('🔍 [AuthProvider] Buscando store_name para usuario:', session.user.id)
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('store_name')
             .eq('id', session.user.id)
             .single()
-          
-          console.log('📊 [AuthProvider] Profile data:', {
-            profile,
-            profileError,
-            store_name: profile?.store_name,
-            userId: session.user.id
-          })
           
           if (mounted) {
             setAuth(session.user, profile?.store_name)
@@ -86,25 +78,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         if (event === 'SIGNED_IN' && session?.user) {
           // Usuario se acaba de loguear
-          console.log('🔑 [AuthProvider] Usuario logueado, actualizando store...')
           try {
-            console.log('🔍 [AuthProvider] Buscando store_name para SIGNED_IN:', session.user.id)
-            const { data: profile, error: profileError } = await supabase
+            const { data: profile } = await supabase
               .from('profiles')
               .select('store_name')
               .eq('id', session.user.id)
               .single()
             
-            console.log('📊 [AuthProvider] Profile SIGNED_IN data:', {
-              profile,
-              profileError,
-              store_name: profile?.store_name,
-              userId: session.user.id
-            })
-            
             setAuth(session.user, profile?.store_name)
           } catch (error) {
-            console.error('❌ [AuthProvider] Error obteniendo profile en SIGNED_IN:', error)
+            console.error('Error obteniendo profile en SIGNED_IN:', error)
             setAuth(session.user, undefined)
           }
         } else if (event === 'SIGNED_OUT') {
@@ -122,7 +105,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('Token refrescado, actualizando usuario...')
           setUser(session.user)
           
-          // También obtener store_name por si cambió
+          // También obtener store_name por si cambió (usar setAuth para consistencia)
           try {
             const { data: profile } = await supabase
               .from('profiles')
@@ -130,11 +113,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
               .eq('id', session.user.id)
               .single()
             
-            if (profile?.store_name) {
-              setStoreName(profile.store_name)
-            }
+            // Usar setAuth para mantener consistencia y persistencia
+            setAuth(session.user, profile?.store_name)
           } catch (error) {
             console.error('Error obteniendo profile en refresh:', error)
+            setAuth(session.user, undefined)
           }
         }
       }
