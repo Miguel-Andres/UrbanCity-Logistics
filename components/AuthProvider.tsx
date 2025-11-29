@@ -99,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('Token refrescado, actualizando usuario...')
           setUser(session.user)
           
-          // También obtener store_name por si cambió
+          // También obtener store_name por si cambió (usar setAuth para consistencia)
           try {
             const { data: profile } = await supabase
               .from('profiles')
@@ -107,11 +107,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
               .eq('id', session.user.id)
               .single()
             
-            if (profile?.store_name) {
-              setStoreName(profile.store_name)
-            }
+            // Usar setAuth para mantener consistencia y persistencia
+            setAuth(session.user, profile?.store_name)
           } catch (error) {
             console.error('Error obteniendo profile en refresh:', error)
+            setAuth(session.user, undefined)
           }
         }
       }
