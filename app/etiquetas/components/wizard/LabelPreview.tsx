@@ -25,6 +25,14 @@ export default function LabelPreview({
   const formData = useFormData()
   const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
+
+  // Debug: Log para ver qué storeName tenemos
+  console.log('🏪 [LabelPreview] storeName actual:', {
+    storeName,
+    storeNameType: typeof storeName,
+    storeNameLength: storeName?.length,
+    userEmail: user.email
+  })
   const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
@@ -106,10 +114,19 @@ export default function LabelPreview({
     setIsGenerating(true)
     try {
       // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const storeNameFinal = storeName || 'Mi Tienda'
+      
+      console.log('📤 [handleGeneratePDF] Enviando a API PDF:', {
+        storeName,
+        storeNameFinal,
+        user_id: user.id,
+        userEmail: user.email
+      })
+      
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: storeName || 'Mi Tienda',
+        store_name: storeNameFinal,
         user_id: user.id  // user_id de la prop recibida
       }
       
@@ -179,10 +196,19 @@ export default function LabelPreview({
     setIsGenerating(true)
     try {
       // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      const storeNameFinal = storeName || 'Mi Tienda'
+      
+      console.log('📤 [handleGenerateZPL] Enviando a API ZPL:', {
+        storeName,
+        storeNameFinal,
+        user_id: user.id,
+        userEmail: user.email
+      })
+      
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: storeName || 'Mi Tienda',
+        store_name: storeNameFinal,
         user_id: user.id  // user_id de la prop recibida
       }
 
