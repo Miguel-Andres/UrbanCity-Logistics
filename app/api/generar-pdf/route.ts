@@ -2,7 +2,7 @@
  * API Route para generar PDFs de etiquetas con tracking integrado
  */
 import { NextRequest } from 'next/server'
-import { puppeteerService } from './services/puppeteer-service'
+import { reactPDFService } from './services/react-pdf-service'
 import { PDFData, GeneratedPDFResponse } from './types'
 import { createShipment } from '@/lib/tracking-helpers'
 import { createClient } from '@supabase/supabase-js'
@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Generar el PDF usando el servicio
-    console.log('Invocando al servicio de generación de PDF...')
-    const resultado: GeneratedPDFResponse = await puppeteerService.generarPDF(datosConTracking)
+    console.log('Invocando al servicio de generación de PDF con React-PDF...')
+    const resultado: GeneratedPDFResponse = await reactPDFService.generarPDF(datosConTracking)
     
     if (!resultado.success || !resultado.pdf) {
       console.error('Fallo en la generación del PDF:', resultado.error)
