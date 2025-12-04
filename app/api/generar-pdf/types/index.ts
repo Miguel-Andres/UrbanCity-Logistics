@@ -18,27 +18,6 @@ export interface PDFData {
   store_name?: string      // Nombre de la tienda del vendedor
 }
 
-export interface PDFOptions {
-  width: number
-  height: number
-  format?: string
-  margin?: {
-    top: string
-    bottom: string
-    left: string
-    right: string
-  }
-}
-
-export interface BrowserOptions {
-  headless: 'new' | boolean
-  args: string[]
-}
-
-export interface PDFConfig {
-  browser: BrowserOptions
-  pdf: PDFOptions
-}
 
 export interface GeneratedPDFResponse {
   success: boolean
