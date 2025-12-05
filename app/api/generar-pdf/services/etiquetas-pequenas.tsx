@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   
   // Content
   content: {
-    padding: 8,
+    padding: 30,
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
