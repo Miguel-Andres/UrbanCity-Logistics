@@ -25,6 +25,14 @@ export default function LabelPreview({
   const formData = useFormData()
   const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
+  
+  // Debug del storeName
+  console.log('🔍 [LabelPreview] StoreName from useAuthStore:', {
+    storeName: storeName,
+    storeName_type: typeof storeName,
+    storeName_length: storeName?.length,
+    fallback_will_be: storeName || 'Mi Tienda'
+  })
 const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')

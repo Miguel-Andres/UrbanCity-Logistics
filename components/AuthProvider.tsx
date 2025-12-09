@@ -52,6 +52,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
             .eq('id', session.user.id)
             .single()
           
+          console.log('🔍 [AuthProvider] Profile data:', {
+            user_id: session.user.id,
+            profile: profile,
+            store_name: profile?.store_name
+          })
+          
           if (mounted) {
             setAuth(session.user, profile?.store_name)
           }
@@ -61,7 +67,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch (error) {
-        console.error('AuthProvider: Error getting initial session:', error)
+        console.error('🚨 [AuthProvider] Error getting initial session:', error)
+        console.error('🚨 [AuthProvider] Initial session error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          error_object: error
+        })
       } finally {
         if (mounted) {
           setLoading(false)
@@ -84,10 +94,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
               .eq('id', session.user.id)
               .single()
             
-            console.log('Profile obtenido:', profile)
+            console.log('🔍 [AuthProvider] Profile obtenido onAuthStateChange:', {
+              profile: profile,
+              store_name: profile?.store_name,
+              user_id: session.user.id
+            })
             setAuth(session.user, profile?.store_name)
           } catch (error) {
-            console.error('Error obteniendo profile:', error)
+            console.error('🚨 [AuthProvider] Error obteniendo profile SIGNED_IN:', error)
+            console.error('🚨 [AuthProvider] Error details:', {
+              message: error instanceof Error ? error.message : 'Unknown error',
+              user_id: session.user.id,
+              error_object: error
+            })
             setAuth(session.user, undefined)
           }
         } else if (event === 'SIGNED_OUT') {
@@ -108,9 +127,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
               .single()
             
             // Usar setAuth para mantener consistencia y persistencia
+            console.log('🔍 [AuthProvider] Profile obtenido TOKEN_REFRESHED:', {
+              profile: profile,
+              store_name: profile?.store_name,
+              user_id: session.user.id
+            })
             setAuth(session.user, profile?.store_name)
           } catch (error) {
-            console.error('Error obteniendo profile en refresh:', error)
+            console.error('🚨 [AuthProvider] Error obteniendo profile TOKEN_REFRESHED:', error)
+            console.error('🚨 [AuthProvider] Error details TOKEN_REFRESHED:', {
+              message: error instanceof Error ? error.message : 'Unknown error',
+              user_id: session.user.id,
+              error_object: error
+            })
             setAuth(session.user, undefined)
           }
         }
