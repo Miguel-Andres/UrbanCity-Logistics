@@ -32,6 +32,9 @@ export interface FormData {
   
   // Nombre de la tienda (opcional, se agrega en el frontend)
   store_name?: string
+  
+  // ID del usuario (opcional, se agrega en el frontend para APIs)
+  user_id?: string
 }
 
 // Tipo de datos para la vista previa (extiende FormData con extras de UI)
