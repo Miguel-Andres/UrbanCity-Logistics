@@ -10,8 +10,11 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { setAuth, setUser, setLoading, setStoreName } = useAuthStore()
+  
+  console.log('🚀 [AuthProvider] Component rendered')
 
   useEffect(() => {
+    console.log('🚀 [AuthProvider] useEffect started')
     let mounted = true
 
     // Crear cliente con configuración explícita
@@ -88,16 +91,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Usuario se acaba de loguear
           console.log('Usuario logueado, actualizando store...')
           try {
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('store_name')
               .eq('id', session.user.id)
               .single()
             
-            console.log('🔍 [AuthProvider] Profile obtenido onAuthStateChange:', {
+            console.log('🔍 [AuthProvider] Profile query result onAuthStateChange:', {
               profile: profile,
+              error: error,
               store_name: profile?.store_name,
-              user_id: session.user.id
+              user_id: session.user.id,
+              query: `SELECT store_name FROM profiles WHERE id = '${session.user.id}'`
             })
             setAuth(session.user, profile?.store_name)
           } catch (error) {
