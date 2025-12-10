@@ -9,24 +9,37 @@ import { useFormData, useLabelStore } from '@/lib/stores/useLabelStore'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 import { User } from '@supabase/supabase-js'
 
+interface Profile {
+  store_name: string | null
+  phone: string | null
+}
+
 export default function LabelPreview({ 
   onPrevStep, 
   onNextStep, 
   nextStepLabel = "Siguiente",
   nextStepDisabled = false,
-  user 
+  user,
+  profile
 }: { 
   onPrevStep?: () => void
   onNextStep?: () => void
   nextStepLabel?: string
   nextStepDisabled?: boolean 
   user: User
+  profile: Profile | null
 }) {
   const formData = useFormData()
-  const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
   
-  // Debug del storeName (removido para evitar spam en console)
+  // Usar store_name desde la prop del servidor (patrón recomendado)
+  const storeName = profile?.store_name || 'Mi Tienda'
+  
+  console.log('✅ [LabelPreview] Using server profile data:', {
+    store_name: profile?.store_name,
+    storeName_final: storeName,
+    profile: profile
+  })
 const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
@@ -107,55 +120,17 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
 
     setIsGenerating(true)
     try {
-      // 🔥 Obtener store_name fresh desde la DB just-in-time
-      console.log('📥 [handleGeneratePDF] Obteniendo store_name fresh desde DB...')
-      
-      let freshStoreName = 'Mi Tienda'
-      
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr')
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
-        
-        console.log('🔗 [handleGeneratePDF] Cliente Supabase creado correctamente')
-        
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-        
-        console.log('🔍 [handleGeneratePDF] Resultado de consulta profiles:', {
-          profile: profile,
-          error: error,
-          user_id: user.id
-        })
-        
-        if (error) {
-          console.error('❌ [handleGeneratePDF] Error Supabase query:', error)
-        } else {
-          freshStoreName = profile?.store_name || 'Mi Tienda'
-        }
-        
-        console.log('✅ [handleGeneratePDF] Store name obtenido:', {
-          user_id: user.id,
-          fresh_store_name: freshStoreName,
-          profile_data: profile,
-          db_error: error
-        })
-        
-      } catch (supabaseError) {
-        console.error('💥 [handleGeneratePDF] Error crítico en consulta Supabase:', supabaseError)
-        console.error('💥 [handleGeneratePDF] Stack trace:', supabaseError instanceof Error ? supabaseError.stack : 'No stack')
-      }
+      console.log('📄 [handleGeneratePDF] Generando con datos del servidor:', {
+        user_id: user.id,
+        store_name: storeName,
+        source: 'Server Component prop'
+      })
 
-      // Actualizar formData con el tamaño seleccionado, store_name fresh y user_id
+      // Actualizar formData con el tamaño seleccionado, store_name del store y user_id
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: freshStoreName,
+        store_name: storeName, // Desde prop del servidor
         user_id: user.id
       }
       
@@ -217,55 +192,17 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
 
     setIsGenerating(true)
     try {
-      // 🔥 Obtener store_name fresh desde la DB just-in-time
-      console.log('📥 [handleGenerateZPL] Obteniendo store_name fresh desde DB...')
-      
-      let freshStoreName = 'Mi Tienda'
-      
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr')
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
-        
-        console.log('🔗 [handleGenerateZPL] Cliente Supabase creado correctamente')
-        
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-        
-        console.log('🔍 [handleGenerateZPL] Resultado de consulta profiles:', {
-          profile: profile,
-          error: error,
-          user_id: user.id
-        })
-        
-        if (error) {
-          console.error('❌ [handleGenerateZPL] Error Supabase query:', error)
-        } else {
-          freshStoreName = profile?.store_name || 'Mi Tienda'
-        }
-        
-        console.log('✅ [handleGenerateZPL] Store name obtenido:', {
-          user_id: user.id,
-          fresh_store_name: freshStoreName,
-          profile_data: profile,
-          db_error: error
-        })
-        
-      } catch (supabaseError) {
-        console.error('💥 [handleGenerateZPL] Error crítico en consulta Supabase:', supabaseError)
-        console.error('💥 [handleGenerateZPL] Stack trace:', supabaseError instanceof Error ? supabaseError.stack : 'No stack')
-      }
+      console.log('📄 [handleGenerateZPL] Generando con datos del servidor:', {
+        user_id: user.id,
+        store_name: storeName,
+        source: 'Server Component prop'
+      })
 
-      // Actualizar formData con el tamaño seleccionado, store_name fresh y user_id
+      // Actualizar formData con el tamaño seleccionado, store_name del store y user_id
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: freshStoreName,
+        store_name: storeName, // Desde prop del servidor
         user_id: user.id
       }
 

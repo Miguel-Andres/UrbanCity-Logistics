@@ -48,21 +48,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
         
         if (session?.user) {
-          // Obtener store_name del perfil
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('store_name')
-            .eq('id', session.user.id)
-            .single()
-          
-          console.log('🔍 [AuthProvider] Profile data:', {
-            user_id: session.user.id,
-            profile: profile,
-            store_name: profile?.store_name
-          })
-          
-          if (mounted) {
-            setAuth(session.user, profile?.store_name)
+          // Obtener store_name del perfil con timeout y manejo de errores mejorado
+          try {
+            console.log('🔍 [AuthProvider] Obteniendo profile para user:', session.user.id)
+            
+            const { data: profile, error: profileError } = await Promise.race([
+              supabase
+                .from('profiles')
+                .select('store_name') // Solo el campo necesario
+                .eq('id', session.user.id)
+                .single(),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+              )
+            ]) as any
+            
+            if (profileError) {
+              console.warn('⚠️ [AuthProvider] Error obteniendo profile, usando fallback:', profileError.message)
+            }
+            
+            const storeName = profile?.store_name || null
+            console.log('🔍 [AuthProvider] Profile data obtenido:', {
+              user_id: session.user.id,
+              store_name: storeName,
+              has_error: !!profileError
+            })
+            
+            if (mounted) {
+              setAuth(session.user, storeName)
+            }
+          } catch (profileFetchError) {
+            console.error('🚨 [AuthProvider] Error crítico obteniendo profile:', profileFetchError)
+            // Continuar con autenticación sin store_name
+            if (mounted) {
+              setAuth(session.user, undefined)
+            }
           }
         } else {
           if (mounted) {
@@ -91,28 +111,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Usuario se acaba de loguear
           console.log('Usuario logueado, actualizando store...')
           try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('store_name')
-              .eq('id', session.user.id)
-              .single()
+            const { data: profile, error: profileError } = await Promise.race([
+              supabase
+                .from('profiles')
+                .select('store_name')
+                .eq('id', session.user.id)
+                .single(),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+              )
+            ]) as any
             
+            if (profileError) {
+              console.warn('⚠️ [AuthProvider] Error obteniendo profile SIGNED_IN:', profileError.message)
+            }
+            
+            const storeName = profile?.store_name || null
             console.log('🔍 [AuthProvider] Profile query result onAuthStateChange:', {
-              profile: profile,
-              error: error,
-              store_name: profile?.store_name,
+              store_name: storeName,
               user_id: session.user.id,
-              query: `SELECT store_name FROM profiles WHERE id = '${session.user.id}'`
+              has_error: !!profileError
             })
-            setAuth(session.user, profile?.store_name)
+            setAuth(session.user, storeName)
           } catch (error) {
-            console.error('🚨 [AuthProvider] Error obteniendo profile SIGNED_IN:', error)
-            console.error('🚨 [AuthProvider] Error details:', {
-              message: error instanceof Error ? error.message : 'Unknown error',
-              user_id: session.user.id,
-              error_object: error
-            })
-            setAuth(session.user, undefined)
+            console.error('🚨 [AuthProvider] Error crítico obteniendo profile SIGNED_IN:', error)
+            setAuth(session.user, undefined) // Usar null en lugar de undefined
           }
         } else if (event === 'SIGNED_OUT') {
           // Usuario se deslogueó
@@ -121,31 +144,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           // Token se refrescó - actualizar el usuario en el store
           console.log('Token refrescado, actualizando usuario...')
-          setUser(session.user)
           
-          // También obtener store_name por si cambió (usar setAuth para consistencia)
+          // Obtener store_name por si cambió (usar setAuth para consistencia)
           try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('store_name')
-              .eq('id', session.user.id)
-              .single()
+            const { data: profile, error: profileError } = await Promise.race([
+              supabase
+                .from('profiles')
+                .select('store_name')
+                .eq('id', session.user.id)
+                .single(),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+              )
+            ]) as any
             
-            // Usar setAuth para mantener consistencia y persistencia
+            if (profileError) {
+              console.warn('⚠️ [AuthProvider] Error obteniendo profile TOKEN_REFRESHED:', profileError.message)
+            }
+            
+            const storeName = profile?.store_name || null
             console.log('🔍 [AuthProvider] Profile obtenido TOKEN_REFRESHED:', {
-              profile: profile,
-              store_name: profile?.store_name,
-              user_id: session.user.id
-            })
-            setAuth(session.user, profile?.store_name)
-          } catch (error) {
-            console.error('🚨 [AuthProvider] Error obteniendo profile TOKEN_REFRESHED:', error)
-            console.error('🚨 [AuthProvider] Error details TOKEN_REFRESHED:', {
-              message: error instanceof Error ? error.message : 'Unknown error',
+              store_name: storeName,
               user_id: session.user.id,
-              error_object: error
+              has_error: !!profileError
             })
-            setAuth(session.user, undefined)
+            setAuth(session.user, storeName)
+          } catch (error) {
+            console.error('🚨 [AuthProvider] Error crítico obteniendo profile TOKEN_REFRESHED:', error)
+            setAuth(session.user, undefined) // Usar null en lugar de undefined
           }
         }
       }

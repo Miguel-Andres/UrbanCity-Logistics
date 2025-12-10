@@ -11,11 +11,17 @@ import { FormData } from '@/app/etiquetas/types'
 import { useLabelStore } from '@/lib/stores/useLabelStore'
 import { User } from '@supabase/supabase-js'
 
-interface SingleLabelWizardProps {
-  user: User
+interface Profile {
+  store_name: string | null
+  phone: string | null
 }
 
-export default function SingleLabelWizard({ user }: SingleLabelWizardProps) {
+interface SingleLabelWizardProps {
+  user: User
+  profile: Profile | null
+}
+
+export default function SingleLabelWizard({ user, profile }: SingleLabelWizardProps) {
   const [chatText, setChatText] = useState('')
   const { formData, updateField, updateMultipleFields, resetForm } = useLabelStore()
 
@@ -70,7 +76,7 @@ export default function SingleLabelWizard({ user }: SingleLabelWizardProps) {
 
         {/* Panel de Acción Rápida - Derecha */}
         <div>
-          <LabelPreview user={user} />
+          <LabelPreview user={user} profile={profile} />
         </div>
       </div>
     </div>

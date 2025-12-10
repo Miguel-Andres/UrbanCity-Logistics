@@ -8,7 +8,7 @@ import { User } from '@supabase/supabase-js'
 interface AuthState {
   // Estado del usuario
   user: User | null
-  storeName: string | null
+  storeName: string | null // Mantener camelCase para consistencia del frontend
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
@@ -16,11 +16,14 @@ interface AuthState {
   // Acciones
   setUser: (user: User | null) => void
   setStoreName: (storeName: string | null) => void
-  setAuth: (user: User, storeName?: string) => void
+  setAuth: (user: User, storeName?: string) => void // storeName puede venir como store_name de DB
   logout: () => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
   clearError: () => void
+  
+  // Getter computado para obtener store_name en formato DB
+  getStoreNameForDB: () => string
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -69,6 +72,12 @@ export const useAuthStore = create<AuthState>()(
       setError: (error) => set({ error }),
 
       clearError: () => set({ error: null }),
+
+      // Getter computado para store_name en formato DB
+      getStoreNameForDB: () => {
+        const state = get()
+        return state.storeName || 'Mi Tienda'
+      },
     }),
     {
       name: 'auth-storage',

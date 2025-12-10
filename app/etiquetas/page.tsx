@@ -15,5 +15,20 @@ export default async function EtiquetasPage() {
     redirect('/access')
   }
 
-  return <EtiquetasClient user={user} />
+  // Obtener profile del usuario en el servidor
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('store_name, phone')
+    .eq('id', user.id)
+    .single()
+
+  // Log para debugging en servidor (aparecerá en logs de Vercel)
+  console.log('🔍 [EtiquetasPage Server] Profile obtenido:', {
+    user_id: user.id,
+    profile: profile,
+    error: profileError,
+    store_name: profile?.store_name
+  })
+
+  return <EtiquetasClient user={user} profile={profile} />
 }
