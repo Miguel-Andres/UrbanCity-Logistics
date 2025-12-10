@@ -113,12 +113,37 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
 
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      // 🔥 Obtener store_name fresh desde la DB just-in-time
+      console.log('📥 [handleGeneratePDF] Obteniendo store_name fresh desde DB...')
+      
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('store_name')
+        .eq('id', user.id)
+        .single()
+      
+      if (error) {
+        console.error('❌ Error obteniendo store_name:', error)
+      }
+      
+      const freshStoreName = profile?.store_name || 'Mi Tienda'
+      
+      console.log('✅ [handleGeneratePDF] Store name obtenido:', {
+        user_id: user.id,
+        fresh_store_name: freshStoreName,
+        profile_data: profile,
+        db_error: error
+      })
+
+      // Actualizar formData con el tamaño seleccionado, store_name fresh y user_id
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: storeName || 'Mi Tienda',
-        user_id: user.id  // user_id de la prop recibida
+        store_name: freshStoreName,
+        user_id: user.id
       }
       
       const response = await fetch('/api/generar-pdf', {
@@ -177,21 +202,39 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
       return
     }
 
-    // User viene como prop del Server Component - siempre disponible
-    console.log('✅ [handleGenerateZPL] User disponible:', {
-      user_id: user.id,
-      user_email: user.email,
-      storeName: storeName
-    })
-
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado, store_name y user_id
+      // 🔥 Obtener store_name fresh desde la DB just-in-time
+      console.log('📥 [handleGenerateZPL] Obteniendo store_name fresh desde DB...')
+      
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('store_name')
+        .eq('id', user.id)
+        .single()
+      
+      if (error) {
+        console.error('❌ Error obteniendo store_name:', error)
+      }
+      
+      const freshStoreName = profile?.store_name || 'Mi Tienda'
+      
+      console.log('✅ [handleGenerateZPL] Store name obtenido:', {
+        user_id: user.id,
+        fresh_store_name: freshStoreName,
+        profile_data: profile,
+        db_error: error
+      })
+
+      // Actualizar formData con el tamaño seleccionado, store_name fresh y user_id
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: storeName || 'Mi Tienda',
-        user_id: user.id  // user_id de la prop recibida
+        store_name: freshStoreName,
+        user_id: user.id
       }
 
       const response = await fetch('/api/generar-zpl', {
