@@ -34,12 +34,6 @@ export default function LabelPreview({
   
   // Usar store_name desde la prop del servidor (patrón recomendado)
   const storeName = profile?.store_name || 'Mi Tienda'
-  
-  console.log('✅ [LabelPreview] Using server profile data:', {
-    store_name: profile?.store_name,
-    storeName_final: storeName,
-    profile: profile
-  })
 const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
@@ -111,20 +105,8 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
       return
     }
 
-    // User viene como prop del Server Component - siempre disponible
-    console.log('✅ [handleGeneratePDF] User disponible:', {
-      user_id: user.id,
-      user_email: user.email,
-      storeName: storeName
-    })
-
     setIsGenerating(true)
     try {
-      console.log('📄 [handleGeneratePDF] Generando con datos del servidor:', {
-        user_id: user.id,
-        store_name: storeName,
-        source: 'Server Component prop'
-      })
 
       // Actualizar formData con el tamaño seleccionado, store_name del store y user_id
       const updatedFormData = { 
@@ -192,11 +174,6 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
 
     setIsGenerating(true)
     try {
-      console.log('📄 [handleGenerateZPL] Generando con datos del servidor:', {
-        user_id: user.id,
-        store_name: storeName,
-        source: 'Server Component prop'
-      })
 
       // Actualizar formData con el tamaño seleccionado, store_name del store y user_id
       const updatedFormData = { 

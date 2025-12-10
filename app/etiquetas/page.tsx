@@ -22,13 +22,7 @@ export default async function EtiquetasPage() {
     .eq('id', user.id)
     .single()
 
-  // Log para debugging en servidor (aparecerá en logs de Vercel)
-  console.log('🔍 [EtiquetasPage Server] Profile obtenido:', {
-    user_id: user.id,
-    profile: profile,
-    error: profileError,
-    store_name: profile?.store_name
-  })
+  // Profile obtenido correctamente en servidor
 
   return <EtiquetasClient user={user} profile={profile} />
 }
