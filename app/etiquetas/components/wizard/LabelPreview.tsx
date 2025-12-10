@@ -123,7 +123,7 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
         
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('store_name')
+          .select('*')
           .eq('id', user.id)
           .single()
         
@@ -233,7 +233,7 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
         
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('store_name')
+          .select('*')
           .eq('id', user.id)
           .single()
         
