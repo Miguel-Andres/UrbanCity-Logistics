@@ -45,20 +45,12 @@ export const useAuthStore = create<AuthState>()(
 
       setStoreName: (storeName) => set({ storeName }),
 
-      setAuth: (user, storeName) => {
-        console.log('🔍 [useAuthStore] setAuth called with:', {
-          user_id: user?.id,
-          storeName: storeName,
-          storeName_type: typeof storeName,
-          storeName_final: storeName || null
-        })
-        set({ 
-          user, 
-          storeName: storeName || null,
-          isAuthenticated: !!user,
-          error: null
-        })
-      },
+      setAuth: (user, storeName) => set({ 
+        user, 
+        storeName: storeName || null,
+        isAuthenticated: !!user,
+        error: null
+      }),
 
       logout: () => set({ 
         user: null, 
