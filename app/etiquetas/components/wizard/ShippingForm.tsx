@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { User, Phone, Calendar, MapPin, MessageSquare, DollarSign } from 'lucide-react'
 import { FormData } from '@/app/etiquetas/types'
 import { useLabelStore } from '@/lib/stores/useLabelStore'
+import LocationAutocomplete from '@/components/ui/LocationAutocomplete'
 
 export default function ShippingForm() {
   const { formData, updateField, updateMultipleFields } = useLabelStore()
@@ -86,18 +87,16 @@ export default function ShippingForm() {
             />
           </div>
 
-          {/* Localidad - Input más corto */}
+          {/* Localidad - Autocompletado */}
           <div className="md:col-span-1">
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-              <MapPin className="w-4 h-4 mr-2 text-orange-500" />
-              Localidad
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Localidad <span className="text-red-500 ml-1">*</span>
             </label>
-            <input
-              type="text"
+            <LocationAutocomplete
               value={formData.localidad ?? ''}
-              onChange={(e) => updateField('localidad', e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900 bg-gray-50 hover:bg-white transition-colors text-sm"
-              placeholder=" CABA"
+              onChange={(value) => updateField('localidad', value)}
+              placeholder="Buscar localidad (ej: CABA, TIGRE)"
+              required={true}
             />
           </div>
         </div>
