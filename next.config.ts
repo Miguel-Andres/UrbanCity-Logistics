@@ -1,15 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push('puppeteer');
-    }
-    return config;
-  },
-  turbopack: {},
-  // Configuración para Vercel
-  serverExternalPackages: ['puppeteer'],
   // Configurar headers para CORS si es necesario
   async headers() {
     return [

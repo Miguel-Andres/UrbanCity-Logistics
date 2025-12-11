@@ -9,24 +9,32 @@ import { useFormData, useLabelStore } from '@/lib/stores/useLabelStore'
 import { useAuthStore } from '@/lib/stores/useAuthStore'
 import { User } from '@supabase/supabase-js'
 
+interface Profile {
+  store_name: string | null
+  phone: string | null
+}
+
 export default function LabelPreview({ 
   onPrevStep, 
   onNextStep, 
   nextStepLabel = "Siguiente",
   nextStepDisabled = false,
-  user 
+  user,
+  profile
 }: { 
   onPrevStep?: () => void
   onNextStep?: () => void
   nextStepLabel?: string
   nextStepDisabled?: boolean 
   user: User
+  profile: Profile | null
 }) {
   const formData = useFormData()
-  const { storeName } = useAuthStore() // Solo storeName
   const { resetForm } = useLabelStore()
-
-    const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
+  
+  // Usar store_name desde la prop del servidor (patrón recomendado)
+  const storeName = profile?.store_name || 'Mi Tienda'
+const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta || '10x15')
   const [isGenerating, setIsGenerating] = useState(false)
   const [validationError, setValidationError] = useState<string>('')
   const [trackingInfo, setTrackingInfo] = useState<{ code: string; url: string } | null>(null)
@@ -97,30 +105,15 @@ export default function LabelPreview({
       return
     }
 
-    // User viene como prop del Server Component - siempre disponible
-    console.log('✅ [handleGeneratePDF] User disponible:', {
-      user_id: user.id,
-      user_email: user.email,
-      storeName: storeName
-    })
-
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado, store_name y user_id
-      const storeNameFinal = storeName || 'Mi Tienda'
-      
-      console.log('📤 [handleGeneratePDF] Enviando a API PDF:', {
-        storeName,
-        storeNameFinal,
-        user_id: user.id,
-        userEmail: user.email
-      })
-      
+
+      // Actualizar formData con el tamaño seleccionado, store_name del store y user_id
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: storeNameFinal,
-        user_id: user.id  // user_id de la prop recibida
+        store_name: storeName, // Desde prop del servidor
+        user_id: user.id
       }
       
       const response = await fetch('/api/generar-pdf', {
@@ -179,30 +172,15 @@ export default function LabelPreview({
       return
     }
 
-    // User viene como prop del Server Component - siempre disponible
-    console.log('✅ [handleGenerateZPL] User disponible:', {
-      user_id: user.id,
-      user_email: user.email,
-      storeName: storeName
-    })
-
     setIsGenerating(true)
     try {
-      // Actualizar formData con el tamaño seleccionado, store_name y user_id
-      const storeNameFinal = storeName || 'Mi Tienda'
-      
-      console.log('📤 [handleGenerateZPL] Enviando a API ZPL:', {
-        storeName,
-        storeNameFinal,
-        user_id: user.id,
-        userEmail: user.email
-      })
-      
+
+      // Actualizar formData con el tamaño seleccionado, store_name del store y user_id
       const updatedFormData = { 
         ...formData, 
         tipoEtiqueta: selectedSize,
-        store_name: storeNameFinal,
-        user_id: user.id  // user_id de la prop recibida
+        store_name: storeName, // Desde prop del servidor
+        user_id: user.id
       }
 
       const response = await fetch('/api/generar-zpl', {

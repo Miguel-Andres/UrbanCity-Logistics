@@ -10,11 +10,17 @@ import MultipleLabelWizard from '@/app/etiquetas/components/multiple/MultipleLab
 import { useActiveTab, useUIStore } from '@/lib/stores/useUIStore'
 import { User } from '@supabase/supabase-js'
 
-interface EtiquetasClientProps {
-  user: User
+interface Profile {
+  store_name: string | null
+  phone: string | null
 }
 
-export default function EtiquetasClient({ user }: EtiquetasClientProps) {
+interface EtiquetasClientProps {
+  user: User
+  profile: Profile | null
+}
+
+export default function EtiquetasClient({ user, profile }: EtiquetasClientProps) {
   const activeTab = useActiveTab()
   const { setActiveTab } = useUIStore()
 
@@ -63,7 +69,7 @@ export default function EtiquetasClient({ user }: EtiquetasClientProps) {
             {activeTab === 'single' ? (
               <>
                 {/* Single Label Wizard */}
-                <SingleLabelWizard user={user} />
+                <SingleLabelWizard user={user} profile={profile} />
               </>
             ) : (
               /* Multiple Labels Interface */

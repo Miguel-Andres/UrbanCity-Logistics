@@ -15,5 +15,14 @@ export default async function EtiquetasPage() {
     redirect('/access')
   }
 
-  return <EtiquetasClient user={user} />
+  // Obtener profile del usuario en el servidor
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('store_name, phone')
+    .eq('id', user.id)
+    .single()
+
+  // Profile obtenido correctamente en servidor
+
+  return <EtiquetasClient user={user} profile={profile} />
 }

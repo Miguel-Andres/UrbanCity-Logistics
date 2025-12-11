@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Generador de Etiquetas Urban City Logistics",
   description: "Genera etiquetas profesionales de envío a partir de mensajes de WhatsApp y formularios",
+  icons: {
+    icon: '/icon.png',
+  },
 };
 
 export default function RootLayout({

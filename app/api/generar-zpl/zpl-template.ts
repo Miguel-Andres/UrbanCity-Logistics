@@ -15,7 +15,19 @@ export function generarZPLEstandar(datos: FormData): string {
   })()
   
   // Usar store_name si existe, si no usar valor por defecto
+  console.log('🔍 [zpl-template] Datos recibidos:', {
+    store_name: datos.store_name,
+    store_name_type: typeof datos.store_name,
+    tracking_code: datos.tracking_code,
+    user_id: datos.user_id
+  })
+  
   const storeName = datos.store_name || 'Mi Tienda'
+  
+  console.log('🔍 [zpl-template] StoreName final:', {
+    storeName: storeName,
+    was_fallback: !datos.store_name
+  })
   
   // Formatear fecha como en tu ejemplo: 3/10/2025
   const fechaFormateada = datos.fecha 
