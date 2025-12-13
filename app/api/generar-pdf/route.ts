@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
         recipient_city: datos.localidad,
         recipient_reference: datos.entreCalles,
         shipment_type: datos.tipoEnvio as 'VENTA' | 'CAMBIO',
-        payment_type: datos.tipoEntrega as 'COBRAR' | 'SOLO ENTREGAR',
-        amount_to_charge: datos.tipoEntrega === 'COBRAR' ? datos.montoACobrar || 0 : undefined,
+        payment_type: datos.tipoEntrega as 'COBRAR' | 'PAGADO',
+        amount_to_charge: datos.tipoEntrega === 'COBRAR' ? Math.min(datos.montoACobrar || 0, 99999999) : undefined,
         ship_date: datos.fecha,
         notes: datos.observaciones
       })

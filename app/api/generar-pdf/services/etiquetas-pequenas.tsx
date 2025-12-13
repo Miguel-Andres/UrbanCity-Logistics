@@ -13,6 +13,7 @@ const styles = StyleSheet.create({
   page: {
     backgroundColor: 'white',
     fontFamily: 'Helvetica',
+    padding: 4,
   },
   etiqueta: {
     width: '100%',
@@ -23,6 +24,7 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     display: 'flex',
     flexDirection: 'column',
+    padding: 3,
   },
   
   // Header
@@ -31,7 +33,6 @@ const styles = StyleSheet.create({
     borderBottomColor: 'black',
     borderBottomStyle: 'solid',
     paddingVertical: 6,
-    paddingHorizontal: 8,
     textAlign: 'center',
   },
   companyName: {
@@ -52,7 +53,6 @@ const styles = StyleSheet.create({
     borderBottomColor: 'black',
     borderBottomStyle: 'solid',
     paddingVertical: 4,
-    paddingHorizontal: 8,
     backgroundColor: '#f5f5f5',
   },
   infoItem: {
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   
   // Content
   content: {
-    padding: 30,
+    padding: 8,
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -76,14 +76,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 8,
     marginBottom: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    borderBottomStyle: 'solid',
     paddingBottom: 1,
   },
   sectionContent: {
     fontSize: 8,
     lineHeight: 1.3,
+  },
+  contactItem: {
+    fontSize: 8,
+    marginBottom: 3,
   },
   
   // Shipping info
@@ -93,9 +94,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginVertical: 6,
     paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    borderBottomStyle: 'solid',
   },
   shippingType: {
     flex: 1,
@@ -129,10 +127,6 @@ const styles = StyleSheet.create({
   // Observaciones
   observaciones: {
     backgroundColor: '#f9f9f9',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderStyle: 'solid',
-    borderRadius: 2,
     padding: 4,
     minHeight: 32,
     marginVertical: 4,
@@ -150,10 +144,9 @@ const styles = StyleSheet.create({
   qrSection: {
     textAlign: 'center',
     paddingVertical: 6,
-    borderTopWidth: 1,
-    borderTopColor: 'black',
-    borderTopStyle: 'solid',
     marginTop: 'auto',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   qrCode: {
     marginBottom: 4,
@@ -205,11 +198,11 @@ export function EtiquetaPequena({ datos, qrCodeDataUrl, sizeClass }: EtiquetaPeq
         </View>
 
         <View style={styles.basicInfo}>
-          <Text style={styles.infoItem}>
+          <Text style={[styles.infoItem, {paddingLeft: 2}]}>
             <Text style={styles.infoLabel}>Vendedor: </Text>
             {storeName}
           </Text>
-          <Text style={styles.infoItem}>
+          <Text style={[styles.infoItem, {paddingRight: 2}]}>
             <Text style={styles.infoLabel}>Fecha: </Text>
             {fechaFormateada}
           </Text>
@@ -218,11 +211,11 @@ export function EtiquetaPequena({ datos, qrCodeDataUrl, sizeClass }: EtiquetaPeq
         <View style={styles.content}>
           <View style={styles.section}>
             <View style={styles.sectionContent}>
-              <Text>Nombre: {datos.nombre || 'No especificado'}</Text>
-              <Text>Telefono: {datos.telefono || 'No especificado'}</Text>
-              {datos.direccion && <Text>Direccion: {datos.direccion}</Text>}
-              <Text>Localidad: {datos.localidad || 'No especificado'}</Text>
-              {datos.entreCalles && <Text>Entre calles: {datos.entreCalles}</Text>}
+              <Text style={styles.contactItem}>Nombre: {datos.nombre || 'No especificado'}</Text>
+              <Text style={styles.contactItem}>Telefono: {datos.telefono || 'No especificado'}</Text>
+              {datos.direccion && <Text style={styles.contactItem}>Direccion: {datos.direccion}</Text>}
+              <Text style={styles.contactItem}>Localidad: {datos.localidad || 'No especificado'}</Text>
+              {datos.entreCalles && <Text style={styles.contactItem}>Entre calles: {datos.entreCalles}</Text>}
             </View>
           </View>
 
@@ -239,7 +232,7 @@ export function EtiquetaPequena({ datos, qrCodeDataUrl, sizeClass }: EtiquetaPeq
               <View style={styles.infoRow}>
                 <Text style={styles.infoTag}>Pago:</Text>
                 <Text style={styles.infoValue}>
-                  {datos.tipoEntrega}
+                  {datos.tipoEntrega === 'COBRAR' ? 'COBRAR AL ENTREGAR' : 'PAGADO'}
                 </Text>
               </View>
               {datos.tipoEntrega === 'COBRAR' && datos.montoACobrar && (
@@ -264,31 +257,30 @@ export function EtiquetaPequena({ datos, qrCodeDataUrl, sizeClass }: EtiquetaPeq
               </Text>
             </View>
           </View>
+        </View>
 
-          <View style={styles.qrSection}>
-            <View style={styles.qrCode}>
-              {qrCodeDataUrl ? (
-                <Image 
-                  src={qrCodeDataUrl} 
-                  style={{
-                    width: isSize10x10 ? 60 : 80,
-                    height: isSize10x10 ? 60 : 80,
-                  }}
-                />
-              ) : (
-                <View style={{
-                  backgroundColor: '#f0f0f0',
-                  padding: 8,
-                  width: isSize10x10 ? 60 : 80,
-                  height: isSize10x10 ? 60 : 80,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                  <Text style={{ fontSize: 6, fontWeight: 'bold' }}>QR NO DISPONIBLE</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.qrText}>{codigoSeguimiento}</Text>
+        <View style={styles.qrSection}>
+          <View style={styles.qrCode}>
+            {qrCodeDataUrl ? (
+              <Image 
+                src={qrCodeDataUrl} 
+                style={{
+                  width: isSize10x10 ? 71 : 80,
+                  height: isSize10x10 ? 71 : 80,
+                }}
+              />
+            ) : (
+              <View style={{
+                backgroundColor: '#f0f0f0',
+                padding: 8,
+                width: isSize10x10 ? 71 : 80,
+                height: isSize10x10 ? 71 : 80,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <Text style={{ fontSize: 6, fontWeight: 'bold' }}>QR NO DISPONIBLE</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>

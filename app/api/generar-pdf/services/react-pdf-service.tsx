@@ -28,7 +28,7 @@ class ReactPDFService {
       // Generar QR Code
       let qrCodeDataUrl = ''
       try {
-        const qrSize = tipoEtiqueta === '10x10' ? 60 : 
+        const qrSize = tipoEtiqueta === '10x10' ? 250 : 
                       tipoEtiqueta === 'A4' ? 120 : 80
         
         const baseUrl = process.env.NODE_ENV === 'development' 
@@ -40,7 +40,8 @@ class ReactPDFService {
         
         qrCodeDataUrl = await QRCode.toDataURL(qrUrl, {
           width: qrSize,
-          margin: 1,
+          margin: 2,
+          errorCorrectionLevel: 'H',
           color: {
             dark: '#000000',
             light: '#FFFFFF'

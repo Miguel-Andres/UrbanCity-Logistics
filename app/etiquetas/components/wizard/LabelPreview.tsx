@@ -155,7 +155,13 @@ const [selectedSize, setSelectedSize] = useState<string>(formData.tipoEtiqueta |
         // Mostrar botón de nuevo envío
         setShowNewShipmentButton(true)
       } else {
-        console.error('Error generando PDF')
+        const errorText = await response.text()
+        console.error('Error generando PDF:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+          formData: updatedFormData
+        })
         alert('Error al generar el PDF. Por favor, intente nuevamente.')
       }
     } catch (error) {

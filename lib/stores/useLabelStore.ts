@@ -24,7 +24,7 @@ const initialFormData: FormData = {
   localidad: '',
   entreCalles: '',
   observaciones: '',
-  tipoEntrega: 'SOLO ENTREGAR',
+  tipoEntrega: 'PAGADO',
   montoACobrar: 0,
   fecha: new Date().toISOString().split('T')[0]
 }

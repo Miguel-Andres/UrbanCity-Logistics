@@ -18,7 +18,7 @@ export const TIPO_ENVIO_OPTIONS = [
 
 // Opciones de tipo de entrega
 export const TIPO_ENTREGA_OPTIONS = [
-  { value: 'entregar', label: 'SOLO ENTREGAR', totalACobrar: '0' },
+  { value: 'entregar', label: 'PAGADO', totalACobrar: '0' },
   { value: 'cobrar', label: 'COBRAR', totalACobrar: '1' },
   { value: 'cambio', label: 'CAMBIO', totalACobrar: '2' }
 ]

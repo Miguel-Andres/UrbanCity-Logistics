@@ -27,7 +27,7 @@ export default function MultipleLabelWizard() {
     entreCalles: '',
     observaciones: '',
     cpDestinatario: '',
-    tipoEntrega: 'SOLO ENTREGAR',
+    tipoEntrega: 'PAGADO',
     totalACobrar: 0,
     montoCobrar: 0
   })

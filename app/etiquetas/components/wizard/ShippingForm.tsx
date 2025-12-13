@@ -28,7 +28,7 @@ export default function ShippingForm() {
 
   const handleTipoEntregaChange = (value: string) => {
     updateField('tipoEntrega', value)
-    if (value === 'SOLO ENTREGAR') {
+    if (value === 'PAGADO') {
       updateField('montoACobrar', 0)
     }
   }
@@ -185,18 +185,21 @@ export default function ShippingForm() {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
                 }`}
               >
-                COBRAR
+                <div className="flex flex-col items-center">
+                  <span>COBRAR</span>
+                  <span className="text-xs">AL ENTREGAR</span>
+                </div>
               </button>
               <button
                 type="button"
-                onClick={() => handleTipoEntregaChange('SOLO ENTREGAR')}
+                onClick={() => handleTipoEntregaChange('PAGADO')}
                 className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all transform hover:scale-105 ${
-                  formData.tipoEntrega === 'SOLO ENTREGAR'
+                  formData.tipoEntrega === 'PAGADO'
                     ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
                 }`}
               >
-                SOLO ENTREGAR
+                PAGADO
               </button>
             </div>
             {!formData.tipoEntrega && (

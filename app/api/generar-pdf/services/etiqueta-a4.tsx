@@ -307,7 +307,7 @@ export function EtiquetaA4({ datos, qrCodeDataUrl }: EtiquetaA4Props) {
 
   const pageSize = [MEDIDAS_A4.width, MEDIDAS_A4.height] as [number, number]
   
-  const isPagado = datos.tipoEntrega !== 'COBRAR'
+  const isPagado = datos.tipoEntrega === 'PAGADO'
   
   return (
     <Page style={styles.page} size={pageSize} wrap={false}>
@@ -361,7 +361,7 @@ export function EtiquetaA4({ datos, qrCodeDataUrl }: EtiquetaA4Props) {
                         styles.paymentBadgeText,
                         isPagado ? styles.paymentBadgeTextPagado : styles.paymentBadgeTextCobrar
                       ]}>
-                        {datos.tipoEntrega}
+                        {datos.tipoEntrega === 'COBRAR' ? 'COBRAR AL ENTREGAR' : 'PAGADO'}
                       </Text>
                     </View>
                   </View>

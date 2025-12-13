@@ -18,7 +18,7 @@ export interface FormData {
   tipoEnvio?: 'VENTA' | 'CAMBIO'
   
   // Tipo de entrega
-  tipoEntrega?: 'COBRAR' | 'SOLO ENTREGAR'
+  tipoEntrega?: 'COBRAR' | 'PAGADO'
   montoACobrar?: number
   
   // Fechas
