@@ -15,7 +15,7 @@ export interface ShipmentData {
   recipient_city?: string
   recipient_reference?: string
   shipment_type?: 'VENTA' | 'CAMBIO'
-  payment_type?: 'COBRAR' | 'SOLO ENTREGAR'
+  payment_type?: 'COBRAR' | 'PAGADO'
   amount_to_charge?: number
   ship_date?: string
   notes?: string

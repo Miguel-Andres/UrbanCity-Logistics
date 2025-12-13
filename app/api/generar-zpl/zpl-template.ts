@@ -84,8 +84,8 @@ export function generarZPLEstandar(datos: FormData): string {
       `$${new Intl.NumberFormat('es-AR').format(Number(datos.montoACobrar))}` : ''
     zpl += `\n^FO50,570^CF0,40^FDCOBRAR:^FS
 ^FO250,570^CF0,40^FD${montoFormateado}^FS`
-  } else if (datos.tipoEntrega === 'SOLO ENTREGAR') {
-    zpl += `\n^FO250,570^CF0,40^FDSOLO ENTREGAR^FS`
+  } else if (datos.tipoEntrega === 'PAGADO') {
+    zpl += `\n^FO250,570^CF0,40^FDPAGADO^FS`
   }
   
   // Agregar observaciones si existen

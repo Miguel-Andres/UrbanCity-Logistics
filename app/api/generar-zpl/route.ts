@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         recipient_city: data.localidad,
         recipient_reference: data.entreCalles,
         shipment_type: data.tipoEnvio as 'VENTA' | 'CAMBIO',
-        payment_type: data.tipoEntrega as 'COBRAR' | 'SOLO ENTREGAR',
+        payment_type: data.tipoEntrega as 'COBRAR' | 'PAGADO',
         amount_to_charge: data.tipoEntrega === 'COBRAR' ? data.montoACobrar || 0 : undefined,
         ship_date: data.fecha,
         notes: data.observaciones
